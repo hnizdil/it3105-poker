@@ -82,13 +82,59 @@ public class Card {
 		Collections.shuffle(cl);
 	}
 	
-	private static ArrayList<Card> partition(Collection<Card> cards, Object key) {
+	/**
+	 * 
+	 * @param cards 
+	 * @param key - Value or Suit
+	 * @return partitioned List of Cards (2-dimensional List)
+	 */
+	private static ArrayList<ArrayList<Card>> partition(Collection<Card> cards, Object key) {
+		ArrayList<ArrayList<Card>> cl = new ArrayList<ArrayList<Card>>(); //partitioned list
+		Card[] ca = (Card[])cards.toArray(); //input-"set"
+		ArrayList<Card> temp; //temporary List
+		boolean fitting = false; //Flag if a Card is fitting into a sublist
+		boolean keyFlag;	//true=Value, false=Suit
 		
+		if(key instanceof Value) keyFlag=true;
+		else if(key instanceof Suit) keyFlag=false;
+		else ; //TODO place for an exception
+		
+		for(int x=0;x<ca.length;x++){
+			for(ArrayList<Card> sublist: cl){ //search in all sublists
+				if(keyFlag){
+					if(sublist.get(0).getValue()==ca[x].getValue()){
+						sublist.add(ca[x]);
+						fitting=true;
+					}
+				}else{
+					if(sublist.get(0).getSuit()==ca[x].getSuit()){
+						sublist.add(ca[x]);
+						fitting=true;
+					}
+				}	
+			}
+			//if no fitting list, create a new one
+			if(!fitting){
+				temp = new ArrayList<Card>();
+				temp.add(ca[x]);
+				cl.add(temp);
+			}
+		}
+		return cl;
+	}	
+	
+	private static ArrayList<ArrayList<Card>> sortList(ArrayList<ArrayList<Card>> cl){
+		//TODO maybe a short sort algorithm for sorting the sublists
 	}
 	
-	private static ArrayList<Value[]> genValueGroups (Collection<Card> cards) {
-		
+	private static ArrayList<ArrayList<Card>> genValueGroups (Collection<Card> cards) {
+		return partition(cards,Value.ACE); //which value doesn't matter
 	}
+	
+	private static ArrayList<ArrayList<Card>> genSuitGroups (Collection<Card> cards) {
+		return partition(cards,Suit.CLUB); //which suit doesn't matter
+	}
+	
 	public static int[] calcCardsPower(Collection<Card> cards) {
 		
 	}
