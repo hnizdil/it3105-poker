@@ -135,8 +135,62 @@ public class Card {
 		return partition(cards,Suit.CLUB); //which suit doesn't matter
 	}
 	
+	/**
+	 * calculates Card's Power for 5 Cards
+	 * @param cards (Collection of size 5)
+	 * @return a tuple representing the Card's power
+	 */
 	public static int[] calcCardsPower(Collection<Card> cards) {
+		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
+		ArrayList<Integer> tempList; //temporary List to build the tuple
 		
+		//Flush and Straight Flush
+		if(findFlush(valGroups)){
+			if(findStraight(valGroups))
+				tempList.add(0,9); //TODO proof if this is legal
+			else tempList.add(0,6);
+			//tie breaking number (+2 because ordinal() starts at 0)
+			tempList.add(getMaxVal(valGroups).ordinal()+2);
+		}
+		
+		findEqualVal(valGroups); //TODO specify return value
 	}
 	
+	private static boolean findFlush(ArrayList<ArrayList<Card>> vg){
+		boolean x = false;
+		Suit s;
+		s = vg.get(0).get(0).getSuit(); //Suit of first Card in first sublist
+		if(vg.size()==5){
+			for(ArrayList<Card> sublist: vg){
+				if(sublist.get(0).getSuit() == s) x = true;
+				else {
+					x = false;
+					break;
+				}
+			}
+		}
+		return x;
+	}
+	
+	/**
+	 * @param vg - List of value grouped sublists
+	 * @return max Value
+	 */
+	private static Value getMaxVal(ArrayList<ArrayList<Card>> vg) {
+		Value maxVal = vg.get(0).get(0).getValue(); //Value of first sublist
+		for(int i=1; i<vg.size(); i++) { //go through all sublists
+			Value compVal = vg.get(i).get(0).getValue();
+			if(compVal.ordinal() > maxVal.ordinal())
+				maxVal = compVal;
+		}
+		return maxVal;
+	}
+	
+	/**
+	 * Finds groups of equal Values (pairs, 3/4 of an kind) 
+	 * @param vg
+	 */
+	private static findEqualVal(ArrayList<ArrayList<Card>> vg){
+		
+	}
 }
