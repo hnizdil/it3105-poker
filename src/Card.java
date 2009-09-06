@@ -93,7 +93,7 @@ public class Card {
 		Card[] ca = (Card[])cards.toArray(); //input-"set"
 		ArrayList<Card> temp; //temporary List
 		boolean fitting = false; //Flag if a Card is fitting into a sublist
-		boolean keyFlag;	//true=Value, false=Suit
+		boolean keyFlag = false;//true=Value, false=Suit
 		
 		if(key instanceof Value) keyFlag=true;
 		else if(key instanceof Suit) keyFlag=false;
@@ -123,9 +123,11 @@ public class Card {
 		return cl;
 	}	
 	
+	/*
 	private static ArrayList<ArrayList<Card>> sortList(ArrayList<ArrayList<Card>> cl){
 		//TODO maybe a short sort algorithm for sorting the sublists
 	}
+	*/
 	
 	private static ArrayList<ArrayList<Card>> genValueGroups (Collection<Card> cards) {
 		return partition(cards,Value.ACE); //which value doesn't matter
@@ -142,40 +144,95 @@ public class Card {
 	 */
 	public static int[] calcCardsPower(Collection<Card> cards) {
 		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
-		ArrayList<Integer> tempList; //temporary List to build the tuple
+		ArrayList<ArrayList<Card>> suitGroups = genSuitGroups(cards);
+		//temporary List to build the tuple
+		ArrayList<Integer> tempList = new ArrayList<Integer>();
+		int[] powerList;
 		
+		//single Cards from high to low
+		int[] tieBreaker = findTieBreaker(valGroups); 
 		//Flush and Straight Flush
-		if(findFlush(valGroups)){
-			if(findStraight(valGroups))
-				tempList.add(0,9); //TODO proof if this is legal
-			else tempList.add(0,6);
-			//tie breaking number (+2 because ordinal() starts at 0)
-			tempList.add(getMaxVal(valGroups).ordinal()+2);
+		if(findFlush(suitGroups)){
+			if(findStraight(valGroups)){ //Straight Flush
+				tempList.add(0,9);
+				tempList.add(tieBreaker[0]); //14 (Ace) for Royal Flush
+			}	
+			else {
+				tempList.add(0, 6); //normal Flush
+				//adds tie-breaker to end of list
+				for(int i=0; i<tieBreaker.length; i++){
+					tempList.add(tieBreaker[i]); 
+				}
+			}	
+		} else{
+			//normal Straight
+			if(findStraight(valGroups)){
+				tempList.add(0,5);
+				tempList.add(tieBreaker[0]);
+			}	
 		}
 		
-		findEqualVal(valGroups); //TODO specify return value
+		
+		//findEqualVal(valGroups);
+		powerList = new int[tempList.size()];
+		for(int j=0; j<tempList.size(); j++){
+			powerList[j] = tempList.get(j);
+		}
+		return powerList;
 	}
 	
-	private static boolean findFlush(ArrayList<ArrayList<Card>> vg){
+	/**
+	 * @param vg Value Groups
+	 * @return Array of sorted values of single Cards
+	 */
+	private static int[] findTieBreaker(ArrayList<ArrayList<Card>> vg){
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		int[] i;
+		for(ArrayList<Card> cards: vg){
+			if(cards.size() == 1)
+				temp.add(cards.get(0).getValue().ordinal()+2); //Card-deck starts at 2!
+		}
+		Collections.sort(temp);
+		Collections.reverse(temp);
+		i = new int[temp.size()];
+		for(int j=0; j<temp.size(); j++){
+			i[j] = temp.get(j);
+		}
+		return i;
+	}
+	
+	private static boolean findFlush(ArrayList<ArrayList<Card>> sg){
+		if( (sg.size()==1) && (sg.get(0).size()==5))
+			return true;
+		else return false;
+	}
+	
+	private static boolean findStraight(ArrayList<ArrayList<Card>> vg){
 		boolean x = false;
-		Suit s;
-		s = vg.get(0).get(0).getSuit(); //Suit of first Card in first sublist
-		if(vg.size()==5){
-			for(ArrayList<Card> sublist: vg){
-				if(sublist.get(0).getSuit() == s) x = true;
+		ArrayList<Value> vals = new ArrayList<Value>();
+		
+		if(vg.size() == 5){
+			for(ArrayList<Card> c: vg){
+				vals.add(c.get(0).getValue());
+			}
+			Collections.sort(vals);
+			for(int j=0; j<vals.size()-1; j++){
+				//looks if cards are in a row
+				if(vals.get(j+1).ordinal() - vals.get(j).ordinal() == 1)
+					x = true;
 				else {
 					x = false;
-					break;
+					break; //not all in a row; routine can stop
 				}
 			}
-		}
+		} else x = false;
 		return x;
 	}
 	
 	/**
 	 * @param vg - List of value grouped sublists
 	 * @return max Value
-	 */
+	 * 
 	private static Value getMaxVal(ArrayList<ArrayList<Card>> vg) {
 		Value maxVal = vg.get(0).get(0).getValue(); //Value of first sublist
 		for(int i=1; i<vg.size(); i++) { //go through all sublists
@@ -185,12 +242,15 @@ public class Card {
 		}
 		return maxVal;
 	}
+	*/
 	
 	/**
 	 * Finds groups of equal Values (pairs, 3/4 of an kind) 
 	 * @param vg
-	 */
-	private static findEqualVal(ArrayList<ArrayList<Card>> vg){
+	 * @return 
+	 *
+	private static int[] findEqualVal(ArrayList<ArrayList<Card>> vg){
 		
 	}
+	*/
 }
