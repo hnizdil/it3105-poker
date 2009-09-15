@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -11,15 +12,20 @@ import java.util.List;
  * @version 26.08.09
  *
  */
-public class Card {
+public class Card{
 	private Suit suit;
 	private Value value;
+	private static final SuitComparator suitComp = SuitComparator.getInstance();
+	private static final ValueComparator valueComp = ValueComparator.getInstance();	
 	
 	public Card(Suit s, Value v) {
 		suit = s;
 		value = v;
 	}
 	
+	//instanciating a an empty card
+	public Card() {
+	}
 	public Suit getSuit() {	return suit; }
 	
 	public Value getValue() { return value;	}
@@ -36,7 +42,7 @@ public class Card {
 	 * @param cards - A Collection of Cards
 	 * @return Names of the cards
 	 */
-	public ArrayList<String> getCardsNames(Collection<Card> cards) {
+	public ArrayList<String> getCardsNames(ArrayList<Card> cards) {
 		ArrayList<String> strArray = new ArrayList<String>();
 		for (Card c: cards) {
 			//stores cardname in local String-Collection
@@ -62,8 +68,8 @@ public class Card {
 	 * @return card deck
 	 * TODO Parameter yes or no?
 	 */
-	public static Collection<Card> gen52Cards() {
-		Collection<Card> deck = new ArrayList<Card>();
+	public static ArrayList<Card> gen52Cards() {
+		ArrayList<Card> deck = new ArrayList<Card>();
 		for (Suit s: Suit.values()) {
 			for (Value v: Value.values()) {
 				deck.add(new Card(s,v));
@@ -88,61 +94,71 @@ public class Card {
 	 * @param key - Value or Suit
 	 * @return partitioned List of Cards (2-dimensional List)
 	 */
-	private static ArrayList<ArrayList<Card>> partition(Collection<Card> cards, Object key) {
-		ArrayList<ArrayList<Card>> cl = new ArrayList<ArrayList<Card>>(); //partitioned list
-		Card[] ca = (Card[])cards.toArray(); //input-"set"
-		ArrayList<Card> temp; //temporary List
-		boolean fitting = false; //Flag if a Card is fitting into a sublist
+	private static ArrayList<ArrayList<Card>> partition(ArrayList<Card> cards, Object key) {
+		ArrayList<ArrayList<Card>> partList = new ArrayList<ArrayList<Card>>(); //partitioned list
+		ArrayList<Card> tempList = cards; //temporary List
+		ArrayList<Card> tempSubList;
+		Card tempCard;
+		
 		boolean keyFlag = false;//true=Value, false=Suit
 		
-		if(key instanceof Value) keyFlag=true;
-		else if(key instanceof Suit) keyFlag=false;
-		else ; //TODO place for an exception
+		if(key instanceof Value){
+			keyFlag = true;
+			Collections.sort(tempList, valueComp);
+		}else{
+			keyFlag = false;
+			Collections.sort(tempList, suitComp);
+		}
 		
-		for(int x=0;x<ca.length;x++){
-			for(ArrayList<Card> sublist: cl){ //search in all sublists
-				if(keyFlag){
-					if(sublist.get(0).getValue()==ca[x].getValue()){
-						sublist.add(ca[x]);
-						fitting=true;
-					}
-				}else{
-					if(sublist.get(0).getSuit()==ca[x].getSuit()){
-						sublist.add(ca[x]);
-						fitting=true;
-					}
-				}	
+		if(keyFlag){
+			tempCard=tempList.get(0);
+			tempSubList = new ArrayList<Card>();
+			tempSubList.add(tempCard);
+			partList.add(tempSubList);
+			for(int j=1; j<tempList.size(); j++){
+				if(tempList.get(j).getValue() == tempCard.getValue()){
+					tempSubList.add(tempList.get(j));
+				}else {
+					tempSubList = new ArrayList<Card>();
+					tempCard = tempList.get(j);
+					tempSubList.add(tempCard);
+					partList.add(0, tempSubList);
+				}
 			}
-			//if no fitting list, create a new one
-			if(!fitting){
-				temp = new ArrayList<Card>();
-				temp.add(ca[x]);
-				cl.add(temp);
+		}else {
+			tempCard=tempList.get(0);
+			tempSubList = new ArrayList<Card>();
+			tempSubList.add(tempCard);
+			partList.add(tempSubList);
+			for(int j=1; j<tempList.size(); j++){
+				if(tempList.get(j).getSuit() == tempCard.getSuit()){
+					tempSubList.add(tempList.get(j));
+				}else {
+					tempSubList = new ArrayList<Card>();
+					tempCard = tempList.get(j);
+					tempSubList.add(tempCard);
+					partList.add(0, tempSubList);
+				}
 			}
 		}
-		return cl;
+		return partList;
 	}	
 	
-	/*
-	private static ArrayList<ArrayList<Card>> sortList(ArrayList<ArrayList<Card>> cl){
-		//TODO maybe a short sort algorithm for sorting the sublists
-	}
-	*/
-	
-	private static ArrayList<ArrayList<Card>> genValueGroups (Collection<Card> cards) {
+	private static ArrayList<ArrayList<Card>> genValueGroups (ArrayList<Card> cards) {
 		return partition(cards,Value.ACE); //which value doesn't matter
 	}
 	
-	private static ArrayList<ArrayList<Card>> genSuitGroups (Collection<Card> cards) {
+	private static ArrayList<ArrayList<Card>> genSuitGroups (ArrayList<Card> cards) {
 		return partition(cards,Suit.CLUB); //which suit doesn't matter
 	}
 	
 	/**
+	 * ATTENTION: only for 5 cards
 	 * calculates Card's Power for 5 Cards
 	 * @param cards (Collection of size 5)
 	 * @return a tuple representing the Card's power
 	 */
-	public static int[] calcCardsPower(Collection<Card> cards) {
+	public static int[] calcCardsPower(ArrayList<Card> cards) {
 		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
 		ArrayList<ArrayList<Card>> suitGroups = genSuitGroups(cards);
 		//temporary List to build the tuple
@@ -155,7 +171,7 @@ public class Card {
 		if(findFlush(suitGroups)){
 			if(findStraight(valGroups)){ //Straight Flush
 				tempList.add(0,9);
-				tempList.add(tieBreaker[0]); //14 (Ace) for Royal Flush
+				tempList.add(1,tieBreaker[0]); //14 (Ace) for Royal Flush
 			}	
 			else {
 				tempList.add(0, 6); //normal Flush
@@ -164,35 +180,118 @@ public class Card {
 					tempList.add(tieBreaker[i]); 
 				}
 			}	
-		} else{
-			//normal Straight
-			if(findStraight(valGroups)){
-				tempList.add(0,5);
+		}//normal Straight
+		else	if(findStraight(valGroups)){
+					tempList.add(0,5);
+					tempList.add(tieBreaker[0]);
+		}
+		//Full House or 4 of a kind
+		else	if(valGroups.size() == 2){
+					//first sublist, order doesn't matter (only size)
+					ArrayList<Card> cardlist = valGroups.get(0);
+					//4 of a kind (power: [8] - [value of 4 cards])
+					if((cardlist.size()==1) || (cardlist.size()==4)){
+						tempList.add(0, 8);
+						for(ArrayList<Card> cl: valGroups){
+							if(cl.size() == 4)
+								//add the value of the "4 of a kind"
+								tempList.add(cl.get(0).getValue().ordinal()+2);
+						}
+					//Full House (power: [7] - [3 card-value] - [pair-value])
+					} else {	
+						tempList.add(0, 7);
+						for(ArrayList<Card> cl: valGroups){
+							if(cl.size() == 3)
+								//add the value of the 3 cards
+								tempList.add(1,cl.get(0).getValue().ordinal()+2);
+							else
+								//add the value of the pair
+								tempList.add(cl.get(0).getValue().ordinal()+2);
+						}	
+					 }
+		}
+		//TODO error in two pairs routine
+		//two pairs or 3 of a kind
+		else	if(valGroups.size() == 3){
+			int j;
+			ArrayList<Card> cl = valGroups.get(0);
+			for(j=1; j<3; j++)
+				if(cl.size() == 1)
+					cl = valGroups.get(j);
+				else break;
+			
+			//3 of a kind (power: [4] - [high single card] - [low single card])
+			if(cl.size() == 3){
+				tempList.add(0,4);
+				//value of triple
+				tempList.add(cl.get(0).getValue().ordinal()+2);
+				//values of the remaining single cards
+				tempList.add(tieBreaker[0]);
+				tempList.add(tieBreaker[1]);
+			//two pairs (power: [3] - [value high pair] - [value low pair] - [single card])
+			}else	if(cl.size() == 2){
+				tempList.add(0,3);
+				for(ArrayList<Card> c: valGroups){
+					if(c.size() > 1){
+						Integer x = new Integer(c.get(0).getValue().ordinal()+2);
+						if((tempList.size()>1) && (x>tempList.get(1)))
+							tempList.add(1, x);
+						else
+							tempList.add(x);
+					}	
+				}
 				tempList.add(tieBreaker[0]);
 			}	
+		}	
+		//one pair
+		else	if(valGroups.size() == 4){
+			tempList.add(0, 2);
+			for(ArrayList<Card> c: valGroups){
+				if(c.size() == 2){
+					tempList.add(c.get(0).getValue().ordinal()+2);
+					tempList.add(tieBreaker[0]);
+					tempList.add(tieBreaker[1]);
+					tempList.add(tieBreaker[2]);
+				}
+			}
+		}
+		//highest card
+		else {
+			ArrayList<Card> l = new ArrayList<Card>();
+			tempList.add(0, 1);
+			for(ArrayList<Card> c: valGroups){
+				l.add(c.get(0));
+			}
+			Collections.sort(l,valueComp);
+			Collections.reverse(l);
+			for(int j=0; j<l.size(); j++){
+				tempList.add(new Integer(l.get(j).getValue().ordinal()+2));
+			}
 		}
 		
-		
-		//findEqualVal(valGroups);
+		//convert temporary list into array
 		powerList = new int[tempList.size()];
 		for(int j=0; j<tempList.size(); j++){
 			powerList[j] = tempList.get(j);
 		}
+		
 		return powerList;
 	}
 	
 	/**
 	 * @param vg Value Groups
-	 * @return Array of sorted values of single Cards
+	 * @return Array of sorted values of single Cards (high to low)
 	 */
 	private static int[] findTieBreaker(ArrayList<ArrayList<Card>> vg){
 		ArrayList<Integer> temp = new ArrayList<Integer>();
 		int[] i;
 		for(ArrayList<Card> cards: vg){
+			//only single cards
 			if(cards.size() == 1)
 				temp.add(cards.get(0).getValue().ordinal()+2); //Card-deck starts at 2!
 		}
 		Collections.sort(temp);
+		//from highest value to lowest
 		Collections.reverse(temp);
 		i = new int[temp.size()];
 		for(int j=0; j<temp.size(); j++){
@@ -207,18 +306,22 @@ public class Card {
 		else return false;
 	}
 	
+	/*
+	 * finds a Straight in a Collection of Card (size 5)
+	 */
 	private static boolean findStraight(ArrayList<ArrayList<Card>> vg){
 		boolean x = false;
-		ArrayList<Value> vals = new ArrayList<Value>();
+		ArrayList<Card> cards = new ArrayList<Card>();
 		
 		if(vg.size() == 5){
 			for(ArrayList<Card> c: vg){
-				vals.add(c.get(0).getValue());
+				cards.add(c.get(0));
 			}
-			Collections.sort(vals);
-			for(int j=0; j<vals.size()-1; j++){
+			//sort up to values
+			Collections.sort(cards,valueComp);
+			for(int j=0; j<cards.size()-1; j++){
 				//looks if cards are in a row
-				if(vals.get(j+1).ordinal() - vals.get(j).ordinal() == 1)
+				if(cards.get(j+1).getValue().ordinal() - cards.get(j).getValue().ordinal() == 1)
 					x = true;
 				else {
 					x = false;
@@ -229,28 +332,8 @@ public class Card {
 		return x;
 	}
 	
-	/**
-	 * @param vg - List of value grouped sublists
-	 * @return max Value
-	 * 
-	private static Value getMaxVal(ArrayList<ArrayList<Card>> vg) {
-		Value maxVal = vg.get(0).get(0).getValue(); //Value of first sublist
-		for(int i=1; i<vg.size(); i++) { //go through all sublists
-			Value compVal = vg.get(i).get(0).getValue();
-			if(compVal.ordinal() > maxVal.ordinal())
-				maxVal = compVal;
-		}
-		return maxVal;
+	public String toString() {
+		return suit.toString()+", "+value.toString();
 	}
-	*/
 	
-	/**
-	 * Finds groups of equal Values (pairs, 3/4 of an kind) 
-	 * @param vg
-	 * @return 
-	 *
-	private static int[] findEqualVal(ArrayList<ArrayList<Card>> vg){
-		
-	}
-	*/
 }
