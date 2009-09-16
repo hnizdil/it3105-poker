@@ -1,7 +1,6 @@
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -17,6 +16,7 @@ public class Card{
 	private Value value;
 	private static final SuitComparator suitComp = SuitComparator.getInstance();
 	private static final ValueComparator valueComp = ValueComparator.getInstance();	
+	private static final HashSet<HashSet<Integer>> indexSet_5of7 = 
 	
 	public Card(Suit s, Value v) {
 		suit = s;
@@ -30,12 +30,6 @@ public class Card{
 	
 	public Value getValue() { return value;	}
 	
-	/**
-	 * @return the name of the card (String with suit and value)
-	 */
-	public String getCardName() {
-		return suit.toString()+value.toString();
-	}
 	
 	/**
 	 * 
@@ -46,7 +40,7 @@ public class Card{
 		ArrayList<String> strArray = new ArrayList<String>();
 		for (Card c: cards) {
 			//stores cardname in local String-Collection
-			strArray.add(c.getCardName());
+			strArray.add(c.toString());
 		}
 		return strArray;
 	}
@@ -66,7 +60,6 @@ public class Card{
 	/**
 	 * Genereates a full card deck
 	 * @return card deck
-	 * TODO Parameter yes or no?
 	 */
 	public static ArrayList<Card> gen52Cards() {
 		ArrayList<Card> deck = new ArrayList<Card>();
@@ -210,7 +203,6 @@ public class Card{
 						}	
 					 }
 		}
-		//TODO error in two pairs routine
 		//two pairs or 3 of a kind
 		else	if(valGroups.size() == 3){
 			int j;
@@ -333,7 +325,19 @@ public class Card{
 	}
 	
 	public String toString() {
-		return suit.toString()+", "+value.toString();
+		String str;
+		if(value.ordinal() <= 8)
+			str = "["+suit.toString()+", "+(value.ordinal()+2)+"]";
+		else
+			str = "["+suit.toString()+", "+value.toString()+"]";
+		return str;
 	}
 	
+	/*
+	 * parameter x is the size of the set out of which 5 have to be combined
+	 * x: 6 or 7 for Texas Hold'em
+	 */
+	private static HashSet<HashSet<Integer>> genIndexSet(int x){
+		
+	}
 }
