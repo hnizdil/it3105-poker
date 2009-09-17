@@ -16,7 +16,9 @@ public class Card{
 	private Value value;
 	private static final SuitComparator suitComp = SuitComparator.getInstance();
 	private static final ValueComparator valueComp = ValueComparator.getInstance();	
-	private static final HashSet<HashSet<Integer>> indexSet_5of7 = 
+	//Indices for 7-card input or 6-card-input
+	private static final HashSet<HashSet<Integer>> indexSet_7 = genIndexSet(7,5);
+	private static final HashSet<HashSet<Integer>> indexSet_6 = genIndexSet(6,5);
 	
 	public Card(Suit s, Value v) {
 		suit = s;
@@ -29,21 +31,6 @@ public class Card{
 	public Suit getSuit() {	return suit; }
 	
 	public Value getValue() { return value;	}
-	
-	
-	/**
-	 * 
-	 * @param cards - A Collection of Cards
-	 * @return Names of the cards
-	 */
-	public ArrayList<String> getCardsNames(ArrayList<Card> cards) {
-		ArrayList<String> strArray = new ArrayList<String>();
-		for (Card c: cards) {
-			//stores cardname in local String-Collection
-			strArray.add(c.toString());
-		}
-		return strArray;
-	}
 	
 	/**
 	 * Compares two Cards
@@ -151,7 +138,7 @@ public class Card{
 	 * @param cards (Collection of size 5)
 	 * @return a tuple representing the Card's power
 	 */
-	public static int[] calcCardsPower(ArrayList<Card> cards) {
+	private static int[] calcCardsPower(ArrayList<Card> cards) {
 		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
 		ArrayList<ArrayList<Card>> suitGroups = genSuitGroups(cards);
 		//temporary List to build the tuple
@@ -324,7 +311,108 @@ public class Card{
 		return x;
 	}
 	
-	public String toString() {
+	
+	/*
+	 * parameter x is the size of the set out of which 5 have to be combined
+	 * x: 6 or 7 for Texas Hold'em
+	 */
+	private static HashSet<HashSet<Integer>>
+	generate(HashSet<HashSet<Integer>> s,String prefix, String elements, int k){
+		if (k == 0) {
+        	HashSet<Integer> set = new HashSet<Integer>();
+            for(int j=0; j<prefix.length(); j++){
+            	set.add(Integer.parseInt(prefix.substring(j, j+1)));
+            }
+            s.add(set);
+            return s;
+        }
+        for (int i = 0; i < elements.length(); i++)
+            generate(s, prefix + elements.charAt(i), elements.substring(i + 1), k - 1);
+        return s;
+    }  
+
+    /* calculates all subsets of size k from N elements
+     * with method generate()
+     */
+    private static HashSet<HashSet<Integer>> genIndexSet(int N, int k) {
+       String elements = "0123456789";
+       HashSet<HashSet<Integer>> s = new HashSet<HashSet<Integer>>();
+       generate(s, "", elements.substring(0, N), k);
+       return s;
+    }
+    
+    /*
+     * finds the highest power in a set of 5, 6 or 7 cards
+     */
+    public static int[] getHighestPower(ArrayList<Card> cl){
+    	int[] res = null;
+    	switch(cl.size()){
+    	case 5:
+    		res = calcCardsPower(cl);
+    		break;
+    	case 6:
+    		for(HashSet<Integer> s: indexSet_6){
+    			ArrayList<Card> cards = new ArrayList<Card>(cl);
+    			int[] tempRes;
+    			for(int i=0; i<6; i++){
+    				if(!(s.contains(i)))
+    					cards.remove(i);
+    			}
+    			tempRes = calcCardsPower(cards);
+    			if(res != null){
+    				if(comparePower(res, tempRes) < 0)
+    					res = tempRes;
+    			}else res = tempRes;
+    		}
+    		break;
+    	case 7:	
+    		for(HashSet<Integer> s: indexSet_7){
+    			ArrayList<Card> cards = new ArrayList<Card>(cl);
+    			int[] tempRes;
+    			ArrayList<Card> c = new ArrayList<Card>();
+    			for(int i=0; i<7; i++){	
+    				if(!s.contains(i))
+    					c.add(cards.get(i));
+    			}
+    			cards.removeAll(c);
+    			tempRes = calcCardsPower(cards);
+    			if(res != null){
+    				if(comparePower(res, tempRes) < 0)
+    					res = tempRes;
+    			}else res = tempRes;
+    		}
+    		break;
+    	}
+    	return res;
+    }
+    
+    /*
+     * @return negative, zero, positive if power 1 (p1)
+     * is less, equal, more powerful to power 2 (p2)
+     */
+    public static int comparePower(int[] p1, int[] p2){
+    	int res = 0;
+    	if(p1.length != p2.length){
+    		if(p1[0] > p2[0])
+    			res = 1;
+    		else res = -1;
+    	} else{
+    		for(int i=0; i<p1.length; i++){
+    			if(p1[i] != p2[i])	
+    				if(p1[i] > p2[i]){
+    					res = 1;
+    					break;
+    				}else{
+    					res = -1;
+    					break;
+    				}
+    			else res = 0;
+    		}
+    	}
+    	return res;
+    }
+    
+    public String toString() {
 		String str;
 		if(value.ordinal() <= 8)
 			str = "["+suit.toString()+", "+(value.ordinal()+2)+"]";
@@ -333,11 +421,4 @@ public class Card{
 		return str;
 	}
 	
-	/*
-	 * parameter x is the size of the set out of which 5 have to be combined
-	 * x: 6 or 7 for Texas Hold'em
-	 */
-	private static HashSet<HashSet<Integer>> genIndexSet(int x){
-		
-	}
 }
