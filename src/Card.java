@@ -163,7 +163,13 @@ public class Card{
 		}//normal Straight
 		else	if(findStraight(valGroups)){
 					tempList.add(0,5);
-					tempList.add(tieBreaker[0]);
+					//check special case: ACE-2-3-4-5 (lowest Straight)
+					Collections.sort(cards,valueComp);
+					if((cards.get(0).getValue() == Value.TWO) &&
+					   (cards.get(4).getValue() == Value.ACE)){
+						tempList.add(5);
+					}else
+						tempList.add(tieBreaker[0]);
 		}
 		//Full House or 4 of a kind
 		else	if(valGroups.size() == 2){
@@ -289,7 +295,7 @@ public class Card{
 	 * finds a Straight in a Collection of Card (size 5)
 	 */
 	private static boolean findStraight(ArrayList<ArrayList<Card>> vg){
-		boolean x = false;
+		boolean res = false;
 		ArrayList<Card> cards = new ArrayList<Card>();
 		
 		if(vg.size() == 5){
@@ -299,16 +305,24 @@ public class Card{
 			//sort up to values
 			Collections.sort(cards,valueComp);
 			for(int j=0; j<cards.size()-1; j++){
+				int v1,v2;
+				v1 = cards.get(j).getValue().ordinal()+2;
+				v2 = cards.get(j+1).getValue().ordinal()+2;
+				//implicit detection of special case: ACE-2-3-4-5
+				if((j==cards.size()-2) && (v1==5) && (v2==14)){
+					res = true;
+					break;
+				}
 				//looks if cards are in a row
-				if(cards.get(j+1).getValue().ordinal() - cards.get(j).getValue().ordinal() == 1)
-					x = true;
+				if((v2 - v1) == 1)
+					res = true;
 				else {
-					x = false;
+					res = false;
 					break; //not all in a row; routine can stop
 				}
 			}
-		} else x = false;
-		return x;
+		} else res = false;
+		return res;
 	}
 	
 	

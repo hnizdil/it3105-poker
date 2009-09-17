@@ -135,7 +135,9 @@ public class Game {
 		int round = 1;	//number of current betting round
 		Action a;
 		Player p;
+		boolean betReady = false;
 		activePlayers.get(0).decBudget(blind);
+		pot += blind;
 		do{
 			Iterator<Player> it = activePlayers.listIterator();
 			while(it.hasNext()){
@@ -153,9 +155,33 @@ public class Game {
 				case RAISE:
 					System.out.print(", new bet: "+bet);
 				}	
-					
-				}
 			}
+			if(activePlayers.size() > 1){
+				//check all active Players are in
+				for(Player pl: activePlayers){	
+					if(pl.getBet() == bet)
+						betReady = true;
+					else{
+						betReady = false;
+						break;
+					}
+				}
+				if(betReady){	//betting round is over -> next community Card
+					switch(comCards.size()){
+					case 0:		//the Flop
+						dealComCards(3);
+						break;
+					case 3:		//the Turn
+						dealComCards(1);
+						break;
+					case 4:		//the River
+						dealComCards(1);
+						break;
+					case 5:		//Showdown	
+						
+					}
+				}
+			}else assignPot(activePlayers.get(0));
 		}while();
 	}
 	
@@ -174,6 +200,10 @@ public class Game {
 	
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
+	}
+	
+	private void assignPot(Player p){
+		
 	}
 	
 	public void incPot(int a){

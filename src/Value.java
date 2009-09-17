@@ -9,7 +9,7 @@ public enum Value {
 	TWO,
 	THREE,
 	FOUR,
-	FIFE,
+	FIVE,
 	SIX,
 	SEVEN,
 	EIGHT,
