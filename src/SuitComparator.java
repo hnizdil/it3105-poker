@@ -7,19 +7,17 @@ import java.util.Comparator;
  *
  */
 public class SuitComparator  implements Comparator<Card>{
-	
-	private static SuitComparator instance;
+
+	private static SuitComparator instance = null;
 	
 	private SuitComparator(){
 	}
-	
+
 	public static SuitComparator getInstance(){
-		if(instance == null){
-			instance = new SuitComparator();
-		}
+		if (instance == null) instance = new SuitComparator();
 		return instance;
 	}
-	
+
 	public int compare(Card c1, Card c2) {
 		int i = 0;
 		if(c1.getSuit().ordinal() >= c2.getSuit().ordinal()){
