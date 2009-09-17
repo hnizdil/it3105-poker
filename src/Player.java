@@ -24,9 +24,52 @@ public abstract class Player {
 		hold[1] = h2;
 	}
 	
+	/*
+	 * @param x	the new current bet
+	 * @return	true if raise is possible and executed properly
+	 * 			false otherwise
+	 */
+	protected boolean raise(int x){
+		boolean res = false;
+		int bet = Game.getInstance().getBet();
+		if((x > bet) && (x <= Game.getInstance().getMaxBet())){
+			decBudget(x-ownBet);	//decrease with difference to ownBet
+			Game.getInstance().incPot(x-ownBet);	//increase pot
+			ownBet = x;
+			Game.getInstance().setBet(x);
+			res = true;
+		}
+		return res;
+	}
+	
+	protected void call(){
+		int bet = Game.getInstance().getBet();
+		decBudget(bet-ownBet);	//decrease with difference to ownBet
+		Game.getInstance().incPot(bet-ownBet);	//increase pot
+		ownBet = bet;
+	}
+	
+	/*
+	 * some useful functions
+	 */
+	public void initBet(){
+		ownBet = 0;
+	}
+	public void setStatus(boolean b){
+		status = true;
+	}
+	public void incBudget(int a){
+		budget += a;
+	}
+	
+	public void decBudget(int a){
+		budget -= a;
+	}
 	public int getBet(){ return ownBet; }
 	
 	public boolean getStatus(){ return status; }
+	
+	public Card[] getHold(){ return hold; }
 	
 	public abstract Action performAction(int bet);
 }

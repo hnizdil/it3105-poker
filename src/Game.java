@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
 
@@ -11,6 +12,7 @@ public class Game {
 	private int pot;					//The pot
 	private int bet;					//current bet
 	private int maxBet;
+	private int blind;
 	private static Game instance;
 	
 	/*
@@ -22,10 +24,22 @@ public class Game {
 		initGame();
 	}
 	
+	/*
+	 * get-set methods
+	 */
 	public static Game getInstance(){
 		if(instance == null)
 			instance = new Game();
 		return instance;
+	}
+	public int getMaxBet(){
+		return maxBet;
+	}
+	public int getBet(){
+		return bet;
+	}
+	public void setBet(int x){
+		bet = x;
 	}
 	
 	/*
@@ -41,6 +55,8 @@ public class Game {
 		budget = sc.nextInt();
 		System.out.print("Maximum bet each betting round: ");
 		maxBet = sc.nextInt();
+		System.out.print("Blind (only one Blind for the Player who goes first): ");
+		blind = sc.nextInt();
 		//Player instantiations
 		for(int i=0; i<playNum; i++){
 			String ch, name;
@@ -81,6 +97,13 @@ public class Game {
 			//remove that two cards from deck
 			deck.remove(0);
 			deck.remove(0);
+			if(p instanceof HumanPlayer){
+				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
+						" Press return for showing the cards!");
+				System.in.read();
+				Card[] hold = p.getHold();
+				System.out.println(hold[0].toString()+hold[1].toString());
+			}
 		}
 	}
 	
@@ -110,16 +133,26 @@ public class Game {
 	 */
 	private void runGame() {
 		int round = 1;	//number of current betting round
+		Action a;
+		Player p;
+		activePlayers.get(0).decBudget(blind);
 		do{
-			//a betting round
-			for(int i=0; i<players.size(); i++){
-				Action a;
-				Player p;
-				p = players.get(i);
-				if(p.getStatus()){			//test if player already folded
-					a = p.performAction(bet);
-					if(a == Action.FOLD)	//if folded then not active anymore
-						activePlayers.remove(p);
+			Iterator<Player> it = activePlayers.listIterator();
+			while(it.hasNext()){
+				p = it.next();
+				a = p.performAction(bet);
+				printAction(p.toString(), a);
+				System.out.print("Current pot: "+pot);
+				switch(a){
+				case FOLD:
+					it.remove();
+					break;
+				case CALL:
+					System.out.print(", current bet: "+bet);
+					break;
+				case RAISE:
+					System.out.print(", new bet: "+bet);
+				}	
 					
 				}
 			}
@@ -137,6 +170,14 @@ public class Game {
 				ch = sc.next();
 			}while(!(ch.equals("y") || ch.equals("n")));
 		}while(ch.equals("y"));
+	}
+	
+	private void printAction(String name, Action act){
+		System.out.println(name+" did: "+act.toString());
+	}
+	
+	public void incPot(int a){
+		pot += a;
 	}
 	
 	/**
