@@ -1,5 +1,7 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Scanner;
 
 
@@ -21,6 +23,7 @@ public class Game {
 	private Game(){
 		players = new ArrayList<Player>();
 		activePlayers = new ArrayList<Player>();
+		comCards = new ArrayList<Card>();
 		initGame();
 	}
 	
@@ -100,7 +103,8 @@ public class Game {
 			if(p instanceof HumanPlayer){
 				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
 						" Press return for showing the cards!");
-				System.in.read();
+				Scanner sc = new Scanner(System.in);
+				sc.next();
 				Card[] hold = p.getHold();
 				System.out.println(hold[0].toString()+hold[1].toString());
 			}
@@ -132,14 +136,17 @@ public class Game {
 	 * TODO implement the betting round, check for winner, ...
 	 */
 	private void runGame() {
-		int round = 1;	//number of current betting round
 		Action a;
 		Player p;
 		boolean betReady = false;
+		boolean gameRunning = true;
+		
+		dealCards();
 		activePlayers.get(0).decBudget(blind);
-		pot += blind;
+		pot = blind;
+		bet = blind;
 		do{
-			Iterator<Player> it = activePlayers.listIterator();
+			ListIterator<Player> it = activePlayers.listIterator();
 			while(it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
@@ -148,12 +155,13 @@ public class Game {
 				switch(a){
 				case FOLD:
 					it.remove();
+					System.out.println();
 					break;
 				case CALL:
-					System.out.print(", current bet: "+bet);
+					System.out.println(", current bet: "+bet);
 					break;
 				case RAISE:
-					System.out.print(", new bet: "+bet);
+					System.out.println(", new bet: "+bet);
 				}	
 			}
 			if(activePlayers.size() > 1){
@@ -170,22 +178,33 @@ public class Game {
 					switch(comCards.size()){
 					case 0:		//the Flop
 						dealComCards(3);
+						System.out.println("The Flop");
+						printComCards();
 						break;
 					case 3:		//the Turn
 						dealComCards(1);
+						System.out.println("The Turn");
+						printComCards();
 						break;
 					case 4:		//the River
 						dealComCards(1);
+						System.out.println("The River");
+						printComCards();
 						break;
-					case 5:		//Showdown	
-						
+					case 5:		//Showdown
+						assignPot(getWinner(activePlayers));
+						gameRunning = false;
 					}
 				}
-			}else assignPot(activePlayers.get(0));
-		}while();
+			}else{
+				//only one player left -> gets the pot
+				assignPot(activePlayers.toArray(new Player[1]));
+				gameRunning = false;
+			}
+		}while(gameRunning);
 	}
 	
-	private void start(){
+	public void start(){
 		Scanner sc = new Scanner(System.in);
 		String ch;
 		do{
@@ -202,10 +221,59 @@ public class Game {
 		System.out.println(name+" did: "+act.toString());
 	}
 	
-	private void assignPot(Player p){
-		
+	private void printComCards(){
+		for(Card c: comCards){
+			System.out.print(c.toString());
+		}
+		System.out.println();
 	}
 	
+	private Player[] getWinner(ArrayList<Player> pl){
+		ArrayList<Player> winner = null;
+		int[] winPower = null;
+		ArrayList<Card> cards = new ArrayList<Card>();
+		//compare all with current best player
+		for(Player p: pl){
+			cards.clear();
+			if(winner == null) {
+				winner = new ArrayList<Player>();
+				winner.add(p);
+				cards.addAll(comCards);
+				//add two hold cards to comm. cards
+				cards.add(p.getHold()[0]);
+				cards.add(p.getHold()[1]);
+				winPower = Card.getHighestPower(cards); 
+			}else {
+				int[] power;	//power to be compared
+				int compareResult;	//result of comparing
+				cards.addAll(comCards);
+				//add two hold cards to comm. cards
+				cards.add(p.getHold()[0]);
+				cards.add(p.getHold()[1]);
+				power = Card.getHighestPower(cards);	
+				compareResult = Card.comparePower(winPower, power);
+				if(compareResult <= 0){	//Player p is better or equal than current "winner"
+					if(compareResult < 0)
+						winner.clear(); //clear winner list
+					winner.add(p);
+				}	//else no changes needed
+			}
+		}
+		return winner.toArray(new Player[1]);	//convert list to array and return
+	}
+	
+	/*
+	 * splits the pot to several winners or even to one winner
+	 * resets the pot to 0
+	 */
+	private void assignPot(Player[] pa){
+		int amount = pot/pa.length;
+		for(Player p: pa){
+			p.incBudget(amount);
+			System.out.println(p.toString()+" wins "+amount);
+		}
+		pot = 0;
+	}
 	public void incPot(int a){
 		pot += a;
 	}

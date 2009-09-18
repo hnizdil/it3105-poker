@@ -37,7 +37,7 @@ public class Card{
 	 * @param c - A Card
 	 * @return true-equal, false-not equal
 	 */
-	public boolean equals(Card c) {
+	/*public boolean equals(Card c) {
 		return c.suit == this.suit && c.value == this.value;
 	}
 

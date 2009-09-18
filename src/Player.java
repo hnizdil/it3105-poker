@@ -32,9 +32,10 @@ public abstract class Player {
 	protected boolean raise(int x){
 		boolean res = false;
 		int bet = Game.getInstance().getBet();
+		int diff = x-ownBet;
 		if((x > bet) && (x <= Game.getInstance().getMaxBet())){
-			decBudget(x-ownBet);	//decrease with difference to ownBet
-			Game.getInstance().incPot(x-ownBet);	//increase pot
+			decBudget(diff);	//decrease with difference to ownBet
+			Game.getInstance().incPot(diff);	//increase pot
 			ownBet = x;
 			Game.getInstance().setBet(x);
 			res = true;
@@ -44,8 +45,9 @@ public abstract class Player {
 	
 	protected void call(){
 		int bet = Game.getInstance().getBet();
-		decBudget(bet-ownBet);	//decrease with difference to ownBet
-		Game.getInstance().incPot(bet-ownBet);	//increase pot
+		int diff = bet-ownBet;
+		decBudget(diff);	//decrease with difference to ownBet
+		Game.getInstance().incPot(diff);	//increase pot
 		ownBet = bet;
 	}
 	
@@ -64,6 +66,7 @@ public abstract class Player {
 	
 	public void decBudget(int a){
 		budget -= a;
+		ownBet += a;
 	}
 	public int getBet(){ return ownBet; }
 	
@@ -72,4 +75,8 @@ public abstract class Player {
 	public Card[] getHold(){ return hold; }
 	
 	public abstract Action performAction(int bet);
+	
+	public String toString(){
+		return name;
+	}
 }
