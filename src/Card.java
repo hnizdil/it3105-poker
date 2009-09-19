@@ -37,8 +37,14 @@ public class Card{
 	 * @param c - A Card
 	 * @return true-equal, false-not equal
 	 */
-	/*public boolean equals(Card c) {
-		return c.suit == this.suit && c.value == this.value;
+	public boolean equals(Object o) {
+		if (o instanceof Card) {
+			Card c = (Card)o;
+			return c.suit == this.suit && c.value == this.value;
+		}
+		else {
+			return false;
+		}
 	}
 
 	/**
@@ -428,9 +434,9 @@ public class Card{
 	public String toString() {
 		String str;
 		if(value.ordinal() <= 8)
-			str = "["+suit.toString()+", "+(value.ordinal()+2)+"]";
+			str = "[" + (value.ordinal()+2) + " of " + suit + "S]";
 		else
-			str = "["+suit.toString()+", "+value.toString()+"]";
+			str = "[" + value + " of " + suit + "S]";
 		return str;
 	}
 
