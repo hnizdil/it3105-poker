@@ -182,7 +182,7 @@ public class Game {
 					}
 				}
 			}else assignPot(activePlayers.get(0));
-		}while();
+		}while(true);
 	}
 	
 	private void start(){
