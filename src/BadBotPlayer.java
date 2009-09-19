@@ -5,9 +5,9 @@ import java.util.ArrayList;
  * @author Robert Braunschweig
  *
  */
-public class BotPlayer extends Player{
+public class BadBotPlayer extends Player{
 	
-	public BotPlayer(String name, int budget){
+	public BadBotPlayer(String name, int budget){
 		super(name,budget);
 	}
 	

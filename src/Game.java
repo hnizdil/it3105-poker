@@ -67,9 +67,9 @@ public class Game {
 			boolean b;
 			do{
 				b = false;
-				System.out.print("Is player "+(i+1)+" human(h) or artificial(a)? ");
+				System.out.print("Is player "+(i+1)+" human (h) or good artificial (a) or bad artificial (b)? ");
 				ch = sc.next();
-				if(!(ch.equals("h") || ch.equals("a"))){
+				if(!(ch.equals("h") || ch.equals("g") || ch.equals("b"))){
 					System.out.println("Wrong input! Try again!");
 					b = true;
 				}	
@@ -78,8 +78,10 @@ public class Game {
 			name = sc.next();
 			if(ch.equals("h"))
 				players.add(new HumanPlayer(name,budget));
-			else if(ch.equals("a"))
-				players.add(new BotPlayer(name,budget));
+			else if(ch.equals("g"))
+				players.add(new GoodBotPlayer(name,budget));
+			else if(ch.equals("b"))
+				players.add(new BadBotPlayer(name,budget));
 		}
 		deck = Card.gen52Cards();
 		Card.shuffleCards(deck);
