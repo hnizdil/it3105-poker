@@ -48,7 +48,9 @@ public class TestClass {
 		//for(int i: Card.calcCardsPower(list)){
 		//for(int i:Card.getHighestPower(list2))
 		System.out.println(list.size());*/
-		Game.getInstance().start();
+		//Game.getInstance().start();
+		Card[] hole = new Card[]{new Card(Suit.CLUB,Value.ACE), new Card(Suit.DIAMOND,Value.EIGHT)};
+		new Player(hole);
 		//System.out.println(list.size());
 	}
 }	

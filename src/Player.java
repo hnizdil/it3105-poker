@@ -6,22 +6,26 @@
  */
 public abstract class Player {
 	
-	protected Card[] hold;	//hold cards
+	protected Card[] hole;	//hold cards
 	protected String name;	//Players name
 	protected int budget;	//Players money
 	protected boolean status; //true = player is in the game, false = out
 	protected int ownBet;
 	
-	public Player(String name, int budget) {
-		hold = new Card[2];
+	protected Player(Card[] hole){
+		this.hole = hole;
+	}
+	
+	protected Player(String name, int budget) {
+		hole = new Card[2];
 		this.name = name;
 		this.budget = budget;
 		status = true;
 	}
 	
-	public void setHold(Card h1, Card h2) {
-		hold[0] = h1;
-		hold[1] = h2;
+	public void setHole(Card h1, Card h2) {
+		hole[0] = h1;
+		hole[1] = h2;
 	}
 	
 	/*
@@ -78,7 +82,7 @@ public abstract class Player {
 	
 	public boolean getStatus(){ return status; }
 	
-	public Card[] getHold(){ return hold; }
+	public Card[] getHole(){ return hole; }
 	
 	public abstract Action performAction(int bet);
 	

@@ -1,6 +1,4 @@
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Scanner;
 
@@ -37,6 +35,8 @@ public class Game {
 	}
 	
 	public ArrayList<Card> getComCards(){ return comCards;}
+	
+	public int getNumberOfActive(){ return activePlayers.size(); }
 	
 	public int getPot(){ return pot; }
 	
@@ -99,7 +99,7 @@ public class Game {
 	private void dealCards(){
 		for(Player p: players){
 			//deal two cards
-			p.setHold(deck.get(0), deck.get(1));
+			p.setHole(deck.get(0), deck.get(1));
 			//remove that two cards from deck
 			deck.remove(0);
 			deck.remove(0);
@@ -108,7 +108,7 @@ public class Game {
 						" Press any key and return for showing the cards!");
 				Scanner sc = new Scanner(System.in);
 				sc.next();
-				Card[] hold = p.getHold();
+				Card[] hold = p.getHole();
 				System.out.println(hold[0].toString()+hold[1].toString());
 			}
 		}
@@ -231,7 +231,7 @@ public class Game {
 		System.out.println();
 	}
 	
-	private Player[] getWinner(ArrayList<Player> pl){
+	public Player[] getWinner(ArrayList<Player> pl){
 		ArrayList<Player> winner = null;
 		int[] winPower = null;
 		ArrayList<Card> cards = new ArrayList<Card>();
@@ -243,16 +243,16 @@ public class Game {
 				winner.add(p);
 				cards.addAll(comCards);
 				//add two hold cards to comm. cards
-				cards.add(p.getHold()[0]);
-				cards.add(p.getHold()[1]);
+				cards.add(p.getHole()[0]);
+				cards.add(p.getHole()[1]);
 				winPower = Card.getHighestPower(cards); 
 			}else {
 				int[] power;	//power to be compared
 				int compareResult;	//result of comparing
 				cards.addAll(comCards);
 				//add two hold cards to comm. cards
-				cards.add(p.getHold()[0]);
-				cards.add(p.getHold()[1]);
+				cards.add(p.getHole()[0]);
+				cards.add(p.getHole()[1]);
 				power = Card.getHighestPower(cards);	
 				compareResult = Card.comparePower(winPower, power);
 				if(compareResult <= 0){	//Player p is better or equal than current "winner"
