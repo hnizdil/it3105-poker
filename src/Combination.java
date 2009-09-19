@@ -1,75 +1,136 @@
+import java.math.BigInteger;
+import java.util.Iterator;
+import java.util.Arrays;
 import java.util.ArrayList;
 
 @SuppressWarnings("unchecked")
 
-public class Combination
+/*
+ * Uses Knuth's lexicographic combinations algorithm
+ * http://www-cs-faculty.stanford.edu/~knuth/fasc3a.ps.gz
+ *
+ * Can be looped through with foreach when instantiated.
+ *
+ */
+class Combination implements Iterable<ArrayList>, Iterator
 {
-	private ArrayList set;
-	private CombinationGenerator cg;
+	private int[] c;
+	private int n, k, i, x;
+	private BigInteger left;
+	private ArrayList set = new ArrayList();
 
-	public boolean hasMore()
+	public Combination(ArrayList set, int k)
 	{
-		return this.cg.hasMore();
+		this.set.addAll(set);
+		this.n = set.size();
+		this.k = k;
+		this.left = factorial(n).divide(factorial(k).multiply(factorial(n-k)));
+
+		// Initialization
+		c = new int[k+2];
+
+		for (i = 0; i < k; i++) c[i] = i;
+
+		c[i] = n;
+		c[i+1] = 0;
+
+		i = k;
 	}
 
-	public ArrayList getNext()
+	/*
+	 * Returns next combination
+	 */
+	public int[] comboNext()
 	{
-		ArrayList combo = new ArrayList();
+		boolean gotoT4;
+		int[] combo = Arrays.copyOf(c, k);
 
-		for (int i : cg.getNext()) combo.add(this.set.get(i));
+		left = left.subtract(BigInteger.ONE);
+
+		if (i > 0) {
+			c[--i] = x = i + 1;
+		}
+		else {
+			if (c[0]+1 < c[1]) {
+				c[0]++;
+			}
+			else {
+				i = 2;
+
+				do {
+					c[i-2] = i - 2;
+					x = c[i-1] + 1;
+					if (gotoT4 = x == c[i]) i++;
+				} while (gotoT4);
+
+				c[--i] = x;
+			}
+		}
 
 		return combo;
 	}
 
-	public Combination(ArrayList set, int k)
+	/*
+	 * Calculates factorial
+	 */
+	private BigInteger factorial(int x)
 	{
-		this.set = set;
-		this.cg = new CombinationGenerator(set.size(), k);
+		BigInteger f = BigInteger.ONE;
+		for (int i = x; i > 1; i--) {
+			f = f.multiply(new BigInteger(Integer.toString(i)));
+		}
+		return f;
 	}
 
 	/*
-	 * This method is pretty cool, but due to the recursion also very memory
-	 * demanding. Took me like two hours to write this, but for generating
-	 * combinations from card deck with 52 cards it consumes too much memory.
+	 * Iterable interface
+	 */
+	public Iterator<ArrayList> iterator()
+	{
+		return this;
+	}
+
+	/*
+	 * Iterator interface
+	 */
+	public boolean hasNext()
+	{
+		return left.compareTo(BigInteger.ZERO) == 1;
+	}
+
+	/*
+	 * Iterator interface
+	 */
+	public Object next()
+	{
+		ArrayList result = new ArrayList();
+		int[] combo = comboNext();
+		for (int i : combo) result.add(set.get(i));
+		return result;
+	}
+
+	/*
+	 * Iterator interface
+	 */
+	public void remove()
+	{
+	}
+
+	/*
+	 * Test method
 	 */
 	/*
-	public static ArrayList<ArrayList> compute(ArrayList set, int k)
+	public static void main(String[] args)
 	{
-		int i, j;
-		Object removed;
-		ArrayList combination, subSet;
-		ArrayList<ArrayList>
-			subCombinations,
-			combinations = new ArrayList<ArrayList>();
+		ArrayList<Integer> cards = new ArrayList<Integer>();
 
-		if (k > set.size()) {
-			throw new IllegalArgumentException();
-		}
-		else if (set.size() < 1) {
-			throw new IllegalArgumentException();
-		}
-		else if (k == 2) {
-			for (i = 1; i < set.size(); i++) {
-				for (j = 0; j < i; j++) {
-					combination = new ArrayList();
-					combination.add(set.get(i));
-					combination.add(set.get(j));
-					combinations.add(combination);
-				}
-			}
-		}
-		else {
-			subSet = (ArrayList)set.clone();
+		for (int q = 0; q < 50; q++) cards.add(q);
 
-			while (subSet.size() >= k) {
-				removed = subSet.remove(0);
-				subCombinations = compute(subSet, k - 1);
-				for (ArrayList sc : subCombinations) sc.add(removed);
-				combinations.addAll(subCombinations);
-			}
-		}
+		Combination c = new Combination(cards, 5);
 
-		return combinations;
+		for (ArrayList<Integer> combo : c) {
+			System.out.println(combo);
+		}
 	}
 	*/
 }
