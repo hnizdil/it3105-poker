@@ -38,7 +38,8 @@ public class HumanPlayer extends Player {
 			break;
 		case 'r':
 			act = Action.RAISE;
-			System.out.println("Type in your bet (higher than "+currentBet+"): ");
+			System.out.println("Type in your new bet ("+currentBet+"< new bet <"
+					+Game.getInstance().getMaxBet()+"): ");
 			raise(sc.nextInt());
 			break;
 		}

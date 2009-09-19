@@ -1,31 +1,32 @@
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Iterator;
 
 public class TestClass {
 	
 	private static final SuitComparator suitComp = SuitComparator.getInstance();
-	private static final ValueComparator valueComp = ValueComparator.getInstance();	
+	private static final ValueComparator valueComp = ValueComparator.getInstance();
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		ArrayList<Card> list = new ArrayList<Card>();
-		/*
-		list.add(new Card(Suit.DIAMOND, Value.SEVEN));
-		list.add(new Card(Suit.HEART, Value.KING));
-		list.add(new Card(Suit.DIAMOND, Value.JACK));
-		list.add(new Card(Suit.CLUB, Value.SIX));
-		list.add(new Card(Suit.SPADE, Value.NINE));
-		*/
-
+		/*ArrayList<Card> list = new ArrayList<Card>();
+		list.add(new Card(Suit.DIAMOND, Value.TWO));
+		list.add(new Card(Suit.HEART, Value.THREE));
+		list.add(new Card(Suit.DIAMOND, Value.ACE));
+		list.add(new Card(Suit.CLUB, Value.ACE));
+		list.add(new Card(Suit.SPADE, Value.FOUR));
+		
+		System.out.println(new Card(Suit.CLUB, Value.ACE).equals(new Card(Suit.CLUB, Value.ACE)));
 		//Collections.reverse(list);
-		list = Card.gen52Cards();
-
-		ArrayList<Card>
-			hand1 = new ArrayList<Card>(),
-			hand2 = new ArrayList<Card>();
-
+		//list = Card.gen52Cards();
+		
+		//list.add(new Card(Suit.CLUB, Value.KING));
+		for(Card i: list){
+			System.out.println(i);
+		}	
+		/*
 		// Hand 1
 		Card.shuffleCards(list);
 		for (int i = 0; i < 5; i++) hand1.add(list.get(i));
@@ -45,14 +46,9 @@ public class TestClass {
 		System.out.println(comparator.compare(power1, power2));
 
 		//for(int i: Card.calcCardsPower(list)){
-		/*
-		for (int i = 0; i < list.size(); i++){
-			System.out.println(list.get(i));
-		}
-		*/
+		//for(int i:Card.getHighestPower(list2))
+		System.out.println(list.size());*/
+		Game.getInstance().start();
 		//System.out.println(list.size());
-
-		//new Game();
 	}
-
-}
+}	
