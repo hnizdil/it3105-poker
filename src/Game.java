@@ -40,6 +40,8 @@ public class Game {
 	
 	public int getPot(){ return pot; }
 	
+	public ArrayList<Card> getDeck(){ return deck; }
+	
 	public int getMaxBet(){	return maxBet; }
 	
 	public int getBet(){ return bet; }
