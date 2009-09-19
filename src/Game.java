@@ -35,15 +35,16 @@ public class Game {
 			instance = new Game();
 		return instance;
 	}
-	public int getMaxBet(){
-		return maxBet;
-	}
-	public int getBet(){
-		return bet;
-	}
-	public void setBet(int x){
-		bet = x;
-	}
+	
+	public ArrayList<Card> getComCards(){ return comCards;}
+	
+	public int getPot(){ return pot; }
+	
+	public int getMaxBet(){	return maxBet; }
+	
+	public int getBet(){ return bet; }
+	
+	public void setBet(int x){ bet = x;	}
 	
 	/*
 	 * scans parameters from keyboard: number of players, initial budget,
@@ -102,7 +103,7 @@ public class Game {
 			deck.remove(0);
 			if(p instanceof HumanPlayer){
 				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
-						" Press return for showing the cards!");
+						" Press any key and return for showing the cards!");
 				Scanner sc = new Scanner(System.in);
 				sc.next();
 				Card[] hold = p.getHold();
@@ -122,18 +123,22 @@ public class Game {
 		}
 	}
 	/*
-	 * resets pot, community cards, shuffles deck again
+	 * resets pot, community cards, shuffles deck again, moves order one seat further
 	 */
 	private void newGame(){
 		pot = 0;
+		bet = 0;
 		comCards.clear();
 		deck = Card.gen52Cards();
 		Card.shuffleCards(deck);
+		newOrder();
+		activePlayers.clear();
 		activePlayers.addAll(players);
 	}
 	
 	/*
-	 * TODO implement the betting round, check for winner, ...
+	 * main frame of the game
+	 * realizes the betting, the dealing, money handling,...
 	 */
 	private void runGame() {
 		Action a;
@@ -145,23 +150,22 @@ public class Game {
 		activePlayers.get(0).decBudget(blind);
 		pot = blind;
 		bet = blind;
-		do{
+		do{		//beginning of betting round
+			System.out.println("Current pot: "+pot+", current bet: "+bet);
+			printComCards();
 			ListIterator<Player> it = activePlayers.listIterator();
 			while(it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
 				printAction(p.toString(), a);
-				System.out.print("Current pot: "+pot);
 				switch(a){
 				case FOLD:
 					it.remove();
-					System.out.println();
 					break;
 				case CALL:
-					System.out.println(", current bet: "+bet);
 					break;
 				case RAISE:
-					System.out.println(", new bet: "+bet);
+					System.out.println("New bet: "+bet);
 				}	
 			}
 			if(activePlayers.size() > 1){
@@ -175,21 +179,18 @@ public class Game {
 					}
 				}
 				if(betReady){	//betting round is over -> next community Card
+					bet = 0;
+					for(Player ap: activePlayers)	//set ownBet to 0
+						ap.initBet();
 					switch(comCards.size()){
 					case 0:		//the Flop
 						dealComCards(3);
-						System.out.println("The Flop");
-						printComCards();
 						break;
 					case 3:		//the Turn
 						dealComCards(1);
-						System.out.println("The Turn");
-						printComCards();
 						break;
 					case 4:		//the River
 						dealComCards(1);
-						System.out.println("The River");
-						printComCards();
 						break;
 					case 5:		//Showdown
 						assignPot(getWinner(activePlayers));

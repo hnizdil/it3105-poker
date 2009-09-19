@@ -33,13 +33,19 @@ public abstract class Player {
 		boolean res = false;
 		int bet = Game.getInstance().getBet();
 		int diff = x-ownBet;
-		if((x > bet) && (x <= Game.getInstance().getMaxBet())){
-			decBudget(diff);	//decrease with difference to ownBet
-			Game.getInstance().incPot(diff);	//increase pot
-			ownBet = x;
-			Game.getInstance().setBet(x);
-			res = true;
-		}
+		int newBet = x;
+		do{
+			if((newBet >= bet) && (newBet <= Game.getInstance().getMaxBet())){
+				decBudget(diff);	//decrease with difference to ownBet
+				Game.getInstance().incPot(diff);	//increase pot
+				ownBet = newBet;
+				Game.getInstance().setBet(newBet);
+				res = true;
+			}else{
+				newBet = bet;
+				diff = newBet-ownBet;
+			}
+		}while(!res);
 		return res;
 	}
 	
