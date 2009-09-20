@@ -42,7 +42,6 @@ public class BadBotPlayer extends Player {
 
 			// Postflop
 			case 3:
-				System.out.println(hand);
 				break;
 
 			// Turn or turn and river
