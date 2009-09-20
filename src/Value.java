@@ -1,7 +1,7 @@
 
 /**
  * Represents the 13 values in a card-deck
- * @author Robert Braunschweig
+ * @author rb, jh
  * @version 25.08.09
  *
  */

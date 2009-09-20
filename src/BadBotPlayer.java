@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 
 /**
- * Class for a artificial Player
- * @author Robert Braunschweig
+ * Class for a simple artificial Player who makes his decisions only on the current game state
+ * @author rb, jh
  *
  */
 public class BadBotPlayer extends Player{

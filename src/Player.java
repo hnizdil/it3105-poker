@@ -1,6 +1,6 @@
 /**
  * Super class for a Player (bot or human)
- * Provides common features: hold cards
+ * Provides common features: hold cards, budget, name,...
  * @author Robert Braunschweig
  *
  */
@@ -20,6 +20,11 @@ public abstract class Player {
 		this.hole = hole;
 	}
 	
+	/**
+	 * Constructor for real players
+	 * @param name
+	 * @param budget
+	 */
 	protected Player(String name, int budget) {
 		hole = new Card[2];
 		this.name = name;
@@ -29,6 +34,7 @@ public abstract class Player {
 	}
 	
 	public void incWins(){ wins++;}
+	
 	public int getWins(){ return wins;}
 	
 	public void setHole(Card h1, Card h2) {
@@ -37,6 +43,8 @@ public abstract class Player {
 	}
 	
 	/*
+	 * Performes a raise
+	 * Decreases the difference to the old own bet from budget
 	 * @param x	the new current bet
 	 * @return	true if raise is possible and executed properly
 	 * 			false otherwise
@@ -47,6 +55,7 @@ public abstract class Player {
 		int diff = x-ownBet;
 		int newBet = x;
 		do{
+			//if x is not in the valid range it is set to the old bet (like a call)
 			if((newBet >= bet) && (newBet <= Game.getInstance().getMaxBet())){
 				decBudget(diff);	//decrease with difference to ownBet
 				Game.getInstance().incPot(diff);	//increase pot
@@ -61,6 +70,11 @@ public abstract class Player {
 		return res;
 	}
 	
+	/*
+	 * Performs a call.
+	 * Bets the same as current bet and decreases the difference
+	 * to the old own bet from budget
+	 */
 	protected void call(){
 		int bet = Game.getInstance().getBet();
 		int diff = bet-ownBet;
@@ -72,29 +86,29 @@ public abstract class Player {
 	/*
 	 * some useful functions
 	 */
-	public void initBet(){
-		ownBet = 0;
-	}
-	public void setStatus(boolean b){
-		status = true;
-	}
-	public void incBudget(int a){
-		budget += a;
-	}
+	public void initBet(){ ownBet = 0; }
+	
+	public void setStatus(boolean b){ status = true; }
+	
+	public void incBudget(int a){ budget += a;	}
 	
 	public void decBudget(int a){
 		budget -= a;
 		ownBet += a;
 	}
+	
 	public int getBet(){ return ownBet; }
 	
 	public boolean getStatus(){ return status; }
 	
 	public Card[] getHole(){ return hole; }
 	
+	/**
+	 * Performs an Action with input of the current bet
+	 * @param bet the common bet of the current betting round
+	 * @return the performed Action
+	 */
 	public abstract Action performAction(int bet);
 	
-	public String toString(){
-		return name;
-	}
+	public String toString(){ return name;	}
 }

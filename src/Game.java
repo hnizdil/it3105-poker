@@ -2,19 +2,33 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
 
-
+/**
+ * Game is the basic frame in which the Poker game runs.
+ * It organizes the Players and active Players, holds all relevant game
+ * information like pot, current bet, maximum bet, number of played games.
+ * It deals the cards to the players and holds the community card.
+ * It finds out who is the winner and assigns the money.
+ * 
+ * Game has the Singleton pattern. Only one instance may be accessed via
+ * the static method getInstance().
+ * 
+ *@author rb, jh
+ *@version 20.09.2009
+ */
 public class Game {
 	
-	private ArrayList<Player> players;	//2-10 players
-	private ArrayList<Player> activePlayers; // all player who did not fold
-	private ArrayList<Card> deck;		//52 cards
-	private ArrayList<Card> comCards;	//community cards: flop-turn-river
-	private int pot;					//The pot
-	private int bet;					//current bet
-	private int maxBet;
-	private int blind;
+	private ArrayList<Player> players;			//2-10 players
+	private ArrayList<Player> activePlayers; 	// all player who did not fold
+	private ArrayList<Card> deck;				//52 cards
+	private ArrayList<Card> comCards;			//community cards: flop-turn-river
+	private int pot;							//The pot
+	private int bet;							//current bet
+	private int maxBet;							//maximum bet amount per round
+	private int blind;							//bet of first player in first round
 	private int numberOfGames;
 	private static Game instance;
+	//Comparator for hand power
+	private static final HandComparator powerComp = HandComparator.getInstance();
 	
 	/*
 	 * private constructor. singleton pattern
@@ -80,6 +94,7 @@ public class Game {
 			} while(b);	
 			System.out.print("Name of the new player: ");
 			name = sc.next();
+			//3 different Player types
 			if(ch.equals("h"))
 				players.add(new HumanPlayer(name,budget));
 			else if(ch.equals("g"))
@@ -102,11 +117,12 @@ public class Game {
 	
 	private void dealCards(){
 		for(Player p: players){
-			//deal two cards
+			//deal two cards to every player
 			p.setHole(deck.get(0), deck.get(1));
 			//remove that two cards from deck
 			deck.remove(0);
 			deck.remove(0);
+			//in case of a human player the cards are shown on the screen
 			if(p instanceof HumanPlayer){
 				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
 						" Press any key and return for showing the cards!");
@@ -128,8 +144,10 @@ public class Game {
 			deck.remove(0);
 		}
 	}
+	
 	/*
 	 * resets pot, community cards, shuffles deck again, moves order one seat further
+	 * and resets all players to active players
 	 */
 	private void newGame(){
 		pot = 0;
@@ -152,14 +170,17 @@ public class Game {
 		boolean betReady = false;
 		boolean gameRunning = true;
 		
+		//before the first betting round
 		dealCards();
 		activePlayers.get(0).decBudget(blind);
 		pot = blind;
 		bet = blind;
 		do{		//beginning of betting round
+			//prints the current game state
 			System.out.println("Current pot: "+pot+", current bet: "+bet);
 			printComCards();
 			ListIterator<Player> it = activePlayers.listIterator();
+			//asks all active players (who didn't fold) for their next Action
 			while(it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
@@ -173,9 +194,9 @@ public class Game {
 				case RAISE:
 					System.out.println("New bet: "+bet);
 				}	
-			}
+			}	//all players performed an Action
 			if(activePlayers.size() > 1){
-				//check all active Players are in
+				//check all active players if they are "in the game"
 				for(Player pl: activePlayers){	
 					if(pl.getBet() == bet)
 						betReady = true;
@@ -184,7 +205,7 @@ public class Game {
 						break;
 					}
 				}
-				if(betReady){	//betting round is over -> next community Card
+				if(betReady){	//betting round is over -> next community Card(s)
 					bet = 0;
 					for(Player ap: activePlayers)	//set ownBet to 0
 						ap.initBet();
@@ -203,14 +224,19 @@ public class Game {
 						gameRunning = false;
 					}
 				}
+			//only one player left -> gets the pot
 			}else{
-				//only one player left -> gets the pot
 				assignPot(activePlayers);
 				gameRunning = false;
 			}
 		}while(gameRunning);
 	}
 	
+	/**
+	 * The overall starting method.
+	 * Provides a loop to play more than 1 Game.
+	 * Prints the result of all games in the end.
+	 */
 	public void start(){
 		Scanner sc = new Scanner(System.in);
 		String ch;
@@ -231,6 +257,7 @@ public class Game {
 		for(Player p: players)
 			System.out.println(p.toString()+" won "+p.getWins()+" times");
 	}
+	
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
 	}
@@ -242,6 +269,11 @@ public class Game {
 		System.out.println();
 	}
 	
+	/**
+	 * Looks for the winner. For several players with same power a list of them is returned
+	 * @param pl list of players after one Game (after showdown, last remaining)
+	 * @return list of winning players
+	 */
 	public ArrayList<Player> getWinner(ArrayList<Player> pl){
 		ArrayList<Player> winner = null;
 		int[] winPower = null;
@@ -265,7 +297,7 @@ public class Game {
 				cards.add(p.getHole()[0]);
 				cards.add(p.getHole()[1]);
 				power = Card.getHighestPower(cards);	
-				compareResult = Card.comparePower(winPower, power);
+				compareResult = powerComp.compare(winPower, power);
 				if(compareResult <= 0){	//Player p is better or equal than current "winner"
 					if(compareResult < 0)
 						winner.clear(); //clear winner list
@@ -285,30 +317,27 @@ public class Game {
 	 */
 	private void assignPot(ArrayList<Player> pa){
 		int amount;
-		if(pa.size() == 0){		//all players folded
-			amount = pot/players.size();
-			for(Player p: players)
-				p.incBudget(amount);
-			System.out.println("All folded. Everyone wins "+amount);
-		}else{	
-			amount = pot/pa.size();
-			for(Player p: pa){
-				p.incBudget(amount);
-				System.out.println(p.toString()+" wins "+amount);
-			}
+		amount = pot/pa.size();
+		for(Player p: pa){
+			p.incBudget(amount);
+			System.out.println(p.toString()+" wins "+amount);
 		}	
 		pot = 0;
 	}
+	
+	/**
+	 * Increments the pot with a
+	 * @param a 
+	 */
 	public void incPot(int a){
 		pot += a;
 	}
 	
 	/**
 	 * @param args
-	
+	*/
 	public static void main(String[] args) {
-		instance = new Game();
-		instance.start();		
-	} */
+		Game.getInstance().start();	
+	} 
 
 }
