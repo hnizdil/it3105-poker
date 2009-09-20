@@ -1,6 +1,11 @@
 import java.util.ArrayList;
 import java.util.Comparator;
 
+/**
+ * Comparator for comparing int[] of hand power
+ * @author rb, jh
+ *
+ */
 public class HandComparator implements Comparator<int[]>
 {
 	private static HandComparator instance = null;

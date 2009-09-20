@@ -7,9 +7,6 @@ public class TestClass {
 	private static final SuitComparator suitComp = SuitComparator.getInstance();
 	private static final ValueComparator valueComp = ValueComparator.getInstance();
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		/*ArrayList<Card> list = new ArrayList<Card>();
 		list.add(new Card(Suit.DIAMOND, Value.TWO));
@@ -48,9 +45,7 @@ public class TestClass {
 		//for(int i: Card.calcCardsPower(list)){
 		//for(int i:Card.getHighestPower(list2))
 		System.out.println(list.size());*/
-		//Game.getInstance().start();
-		Card[] hole = new Card[]{new Card(Suit.CLUB,Value.ACE), new Card(Suit.DIAMOND,Value.EIGHT)};
-		new Player(hole);
+		Game.getInstance().start();
 		//System.out.println(list.size());
 	}
 }	

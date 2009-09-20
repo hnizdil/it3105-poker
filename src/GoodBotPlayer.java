@@ -5,8 +5,8 @@ import java.util.Random;
  * Class for a better artificial Player with pre-flop simulation
  * and hand-strength calculation
  * TODO testing
- * @author Robert Braunschweig
- *
+ * @author rb,jh
+ * @version 20.09.2009
  */
 public class GoodBotPlayer extends Player{
 	private final double foldLimit = 0.01;
@@ -20,7 +20,7 @@ public class GoodBotPlayer extends Player{
 		super(name,budget);
 	}
 
-	/*
+	/**
 	 * contains the decision of the bot on information of current game state
 	 * @see Player#performAction(int)
 	 */
@@ -32,6 +32,12 @@ public class GoodBotPlayer extends Player{
 		double winProbability = PreFlopTable.getWinningProbability(hole, numberOfActive);
 		ArrayList<Card> comCards = Game.getInstance().getComCards();
 		Action act = Action.FOLD;	//default value
+		
+		//if the player himself is the last active player he only need to call and win
+		if(numberOfActive == 1) {
+			call();
+			return Action.CALL;
+		}
 		
 		switch(comCards.size()){
 		case 0:	//pre-flop
@@ -66,9 +72,9 @@ public class GoodBotPlayer extends Player{
 		return act;
 	}
 	
-	/*generates the index tuples for all two hole cards out of the remaining deck
-	 * of size N
-	 *  
+	/*
+	 * generates the index tuples for all two hole cards out of the remaining deck
+	 * of size N 
 	 */
 	private ArrayList<int[]> genIndexSet(int N){
 		ArrayList<int[]> res = new ArrayList<int[]>();
@@ -93,7 +99,7 @@ public class GoodBotPlayer extends Player{
 		//without the own hole cards and the comCards
 		deck.remove(this.hole[0]);
 		deck.remove(this.hole[1]);
-		deck.remove(comCards);
+		deck.removeAll(comCards);
 		Player p;
 		Card[] hole = new Card[2];	//hole for comparison
 		ArrayList<Player> players = new ArrayList<Player>();

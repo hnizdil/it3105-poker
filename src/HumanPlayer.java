@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 /**
  * Class for a human Player
- * @author Robert Braunschweig
+ * @author rb, jh
  *
  */
 
@@ -14,6 +14,7 @@ public class HumanPlayer extends Player {
 	
 	/**
 	 * performs action according to keyboard input
+	 * @param the current bet in the running betting round
 	 */
 	public Action performAction(int currentBet){
 		Scanner sc = new Scanner(System.in);
