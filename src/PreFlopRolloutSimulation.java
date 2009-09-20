@@ -1,3 +1,4 @@
+import mpi.*;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -15,34 +16,36 @@ public class PreFlopRolloutSimulation
 
 	public static void main(String[] args)
 	{
-		int upper;
-		int size = 4;
-		int step = (int)Math.ceil(classes.size() / (float)size);
-		ArrayList<ArrayList<Card>> classesSet;
+		MPI.Init(args);
 
-		for (int i = 0; i < size; i++) {
-			upper = (i+1) * step;
-			upper = upper > classes.size() ? classes.size() : upper;
+		Intracomm c = MPI.COMM_WORLD;
 
-			classesSet = new ArrayList<ArrayList<Card>>();
-			classesSet.addAll(classes.subList(i*step, upper));
+		int
+			size = c.Size(),
+			rank = c.Rank(),
+			step = (int)Math.ceil(classes.size() / (float)size);
 
-			roll(classesSet);
-		}
+		// Don't have to do anything fancy, just process rank will do the trick
+		roll(step, rank);
+
+		MPI.Finalize();
 
 		//PreFlopRolloutSimulation();
 		//fillECTable();
 	}
 
+	/**
+	 * Prints SQL to fill preflop_ec table to the standard output
+	 */
 	private static void fillECTable()
 	{
-		HashSet<ArrayList<Card>> hs = new HashSet<ArrayList<Card>>(classes);
+		ArrayList<ArrayList<Card>> hs = new ArrayList<ArrayList<Card>>(classes);
 
 		System.out.println("INSERT INTO `preflop_ec` (`id`, `card1`, `card2`, `suited`) VALUES");
 
 		for (ArrayList<Card> ec : hs) {
 			System.out.println("(" +
-				ec.hashCode() + ", \"" +
+				hs.indexOf(ec) + ", \"" +
 				ec.get(0).getValue() + "\", \"" +
 				ec.get(1).getValue() + "\", " +
 				(ec.get(0).getSuit() == ec.get(1).getSuit() ? "TRUE" : "FALSE") +
@@ -50,37 +53,56 @@ public class PreFlopRolloutSimulation
 		}
 	}
 
+	/**
+	 * Just empty constructor.
+	 */
 	private PreFlopRolloutSimulation()
 	{
 	}
 
-	private static void roll(ArrayList<ArrayList<Card>> classesSet)
+	/**
+	 * Rolls preflop rollout simulation
+	 *
+	 * @param length Length of chunk to get from equivalence classes.
+	 * @param offset Offset to start the chunk. It's in multiples of chunk.
+	 */
+	private static void roll(int length, int offset)
 	{
+		ArrayList<int[]> results = new ArrayList<int[]>();
 		ArrayList<Card> remainder, community, cards;
+		ArrayList<ArrayList<Card>> classesSet = new ArrayList<ArrayList<Card>>();
 		HandComparator hc = HandComparator.getInstance();
+
 		int[] myPower, power;
-		int result, subResult;
-		int run_count, run_wins, run_ties, run_losses;
-		int classRounds = 10;
-		int plCount;
-		int[] subResults;
-		ArrayList<Hashtable<Integer,int[]>> results = new ArrayList();
-		Hashtable<Integer,int[]> ht;
-		int[] ra;
 
+		int
+			lower = offset*length, upper,
+			result, subResult,
+			runCount, runWins, runTies, runLosses,
+			classRounds = 10,
+			plCount,
+			eclassIndex;
+
+		// Get chunk of this process
+		upper = (upper = lower + length) > classes.size() ? classes.size() : upper;
+		classesSet.addAll(classes.subList(lower, upper));
+
+		// Loop through all player counts
 		for (plCount = 1; plCount < 10; plCount++) {
-			results.add(plCount-1, new Hashtable<Integer,int[]>());
-			ht = results.get(plCount-1);
-
+			// Loop through equivalence classes
 			for (ArrayList<Card> ec : classesSet) {
+				// ID of this equivalence class
+				eclassIndex = classesSet.indexOf(ec) + lower;
+
 				// Reset counters
-				run_count = run_wins = run_ties = run_losses = 0;
+				runCount = runWins = runTies = runLosses = 0;
 
 				// Run through all equivalence classes
 				remainder = new ArrayList<Card>();
 				remainder.addAll(allCards);
 				remainder.removeAll(ec);
 
+				// Do classRounds rounds for each equivalence class
 				for (int cr = 0; cr < classRounds; cr++) {
 					Collections.shuffle(remainder);
 
@@ -112,32 +134,38 @@ public class PreFlopRolloutSimulation
 						}
 					}
 
-					run_count++;
+					runCount++;
 					if (result > 1) {
-						run_wins++;
+						runWins++;
 					}
 					else if (result == 0) {
-						run_ties++;
+						runTies++;
 					}
 					else {
-						run_losses++;
+						runLosses++;
 					}
-				}
+				} // Rounds loop
 
-				ra = new int[]{run_count, run_wins, run_ties, run_losses};
-				ht.put(ec.hashCode(), ra);
-			}
-		}
+				// Save round results
+				results.add(new int[]{eclassIndex, plCount, runCount, runWins, runTies, runLosses});
+			} // Equivalence classes loop
+		} // Player counts loop
 
 		conn.saveResults(results);
 	}
 
+	/**
+	 * Instance getter
+	 */
 	public static PreFlopRolloutSimulation getInstance()
 	{
 		if (instance == null) instance = new PreFlopRolloutSimulation();
 		return instance;
 	}
 
+	/**
+	 * Generates equivalence classes. Just one pair from each class.
+	 */
 	private static ArrayList<ArrayList<Card>> generateHoleCardsEquivalenceClasses()
 	{
 		int i, j;
