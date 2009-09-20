@@ -12,14 +12,12 @@ public abstract class Player {
 	protected boolean status; //true = player is in the game, false = out
 	protected int ownBet;
 	protected int wins;
-	protected Game game;
 	
 	/*
 	 * Player constructor for "dummy" player for Hand-Strength-Calculations
 	 */
 	protected Player(Card[] hole){
 		this.hole = hole;
-		this.game = Game.getInstance();
 	}
 	
 	/**
@@ -28,7 +26,6 @@ public abstract class Player {
 	 * @param budget
 	 */
 	protected Player(String name, int budget) {
-		this.game = Game.getInstance();
 		hole = new Card[2];
 		this.name = name;
 		this.budget = budget;

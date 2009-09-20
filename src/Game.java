@@ -1,3 +1,4 @@
+/*TODO*/import java.io.File;
 import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
@@ -16,7 +17,7 @@ import java.util.Scanner;
  *@version 20.09.2009
  */
 public class Game {
-	
+
 	private ArrayList<Player> players;			//2-10 players
 	private ArrayList<Player> activePlayers; 	// all player who did not fold
 	private ArrayList<Card> deck;				//52 cards
@@ -27,43 +28,44 @@ public class Game {
 	private int blind;							//bet of first player in first round
 	private int numberOfGames;
 	private static Game instance;
+
 	//Comparator for hand power
 	private static final HandComparator powerComp = HandComparator.getInstance();
-	
-	/*
+
+	/**
 	 * private constructor. singleton pattern
 	 */
-	private Game(){
-		players = new ArrayList<Player>();
+	private Game()
+	{
+		players       = new ArrayList<Player>();
 		activePlayers = new ArrayList<Player>();
-		comCards = new ArrayList<Card>();
+		comCards      = new ArrayList<Card>();
 		numberOfGames = 0;
 		initGame();
 	}
-	
-	/*
+
+	/**
 	 * get-set methods
 	 */
 	public static Game getInstance(){
-		if(instance == null) instance = new Game();
-		return instance;
+		return instance = instance == null ? new Game() : instance;
 	}
-	
+
 	public ArrayList<Card> getComCards(){ return comCards;}
-	
+
 	public int getNumberOfActive(){ return activePlayers.size(); }
-	
+
 	public int getPot(){ return pot; }
-	
+
 	public ArrayList<Card> getDeck(){ return deck; }
-	
+
 	public int getMaxBet(){	return maxBet; }
-	
+
 	public int getBet(){ return bet; }
-	
+
 	public void setBet(int x){ bet = x;	}
-	
-	/*
+
+	/**
 	 * scans parameters from keyboard: number of players, initial budget,
 	 * generation of deck
 	 */
@@ -86,41 +88,50 @@ public class Game {
 		blind = sc.nextInt();
 
 		//Player instantiations
-		for(int i = 0; i < playNum; i++){
-			String ch, name;
+		for (int i = 0; i < playNum; i++){
 			boolean b;
+			String name;
+			char ch;
 
 			do {
-				System.out.print("Is player "+(i+1)+" human (h) or good artificial (g) or bad artificial (b)? ");
-				ch = sc.next();
+				System.out.print(
+						"Is player " + (i+1) +
+						" human (h) or good artificial (g) or bad artificial (b)? "
+						);
+				ch = sc.next().charAt(0);
 
-				if(b = !(ch.equals("h") || ch.equals("g") || ch.equals("b"))) {
-					System.out.println("Wrong input! Try again!");
+				if(b = ch != 'h' && ch != 'g' && ch != 'b') {
+					System.out.println("Wrong input. Try again, please.");
 				}
 			} while(b);
 
 			System.out.print("Name of the new player: ");
 			name = sc.next();
 
-			//3 different Player types
-			if(ch.equals("h"))      players.add(new HumanPlayer(name,budget));
-			else if(ch.equals("g")) players.add(new GoodBotPlayer(name,budget));
-			else if(ch.equals("b")) players.add(new BadBotPlayer(name,budget));
+			// 3 different Player types
+			switch (ch) {
+				case 'h': players.add(new HumanPlayer(name,budget)); break;
+				case 'g': players.add(new GoodBotPlayer(name,budget)); break;
+				case 'b': players.add(new BadBotPlayer(name,budget)); break;
+				default:
+			}
 		}
 
-		//deck = Card.gen52Cards();
-		//Card.shuffleCards(deck);
+		sc.close();
+
+		deck = Card.gen52Cards();
+		Card.shuffleCards(deck);
 	}
-	
-	/*
-	 * takes the first player and put him to the end
+
+	/**
+	 * Takes the first player and put him to the end
 	 */
 	private void newOrder(){
 		Player p = players.get(0);
 		players.remove(0);
 		players.add(p);
 	}
-	
+
 	private void dealCards(){
 		for(Player p: players){
 			//deal two cards to every player
@@ -139,8 +150,8 @@ public class Game {
 			}
 		}
 	}
-	
-	/*
+
+	/**
 	 * deals i community cards on the table
 	 * for example, i=3 for flop
 	 */
@@ -150,8 +161,8 @@ public class Game {
 			deck.remove(0);
 		}
 	}
-	
-	/*
+
+	/**
 	 * resets pot, community cards, shuffles deck again, moves order one seat further
 	 * and resets all players to active players
 	 */
@@ -165,8 +176,8 @@ public class Game {
 		activePlayers.clear();
 		activePlayers.addAll(players);
 	}
-	
-	/*
+
+	/**
 	 * main frame of the game
 	 * realizes the betting, the dealing, money handling,...
 	 */
@@ -175,32 +186,38 @@ public class Game {
 		Player p;
 		boolean betReady = false;
 		boolean gameRunning = true;
-		
+
 		//before the first betting round
 		dealCards();
 		activePlayers.get(0).decBudget(blind);
 		pot = blind;
 		bet = blind;
-		do{		//beginning of betting round
+
+		//beginning of betting round
+		do {
 			//prints the current game state
 			System.out.println("Current pot: "+pot+", current bet: "+bet);
 			printComCards();
 			ListIterator<Player> it = activePlayers.listIterator();
+
 			//asks all active players (who didn't fold) for their next Action
 			while(it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
 				printAction(p.toString(), a);
 				switch(a){
-				case FOLD:
-					it.remove();
-					break;
-				case CALL:
-					break;
-				case RAISE:
-					System.out.println("New bet: "+bet);
+					case FOLD:
+						it.remove();
+						break;
+					case CALL:
+						break;
+					case RAISE:
+						System.out.println("New bet: "+bet);
 				}	
-			}	//all players performed an Action
+			}
+
+			//all players performed an Action
+
 			if(activePlayers.size() > 1){
 				//check all active players if they are "in the game"
 				for(Player pl: activePlayers){	
@@ -216,28 +233,28 @@ public class Game {
 					for(Player ap: activePlayers)	//set ownBet to 0
 						ap.initBet();
 					switch(comCards.size()){
-					case 0:		//the Flop
-						dealComCards(3);
-						break;
-					case 3:		//the Turn
-						dealComCards(1);
-						break;
-					case 4:		//the River
-						dealComCards(1);
-						break;
-					case 5:		//Showdown
-						assignPot(getWinner(activePlayers));
-						gameRunning = false;
+						case 0:		//the Flop
+							dealComCards(3);
+							break;
+						case 3:		//the Turn
+							dealComCards(1);
+							break;
+						case 4:		//the River
+							dealComCards(1);
+							break;
+						case 5:		//Showdown
+							assignPot(getWinner(activePlayers));
+							gameRunning = false;
 					}
 				}
-			//only one player left -> gets the pot
+				//only one player left -> gets the pot
 			}else{
 				assignPot(activePlayers);
 				gameRunning = false;
 			}
 		}while(gameRunning);
 	}
-	
+
 	/**
 	 * The overall starting method.
 	 * Provides a loop to play more than 1 Game.
@@ -257,26 +274,28 @@ public class Game {
 		}while(ch.equals("y"));
 		printGameResult();
 	}
-	
+
 	private void printGameResult(){
 		System.out.println("Played games: "+numberOfGames);
 		for(Player p: players)
 			System.out.println(p.toString()+" won "+p.getWins()+" times");
 	}
-	
+
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
 	}
-	
+
 	private void printComCards(){
 		for(Card c: comCards){
 			System.out.print(c.toString());
 		}
 		System.out.println();
 	}
-	
+
 	/**
-	 * Looks for the winner. For several players with same power a list of them is returned
+	 * Looks for the winner.
+	 * For several players with same power a list of them is returned
+	 *
 	 * @param pl list of players after one Game (after showdown, last remaining)
 	 * @return list of winning players
 	 */
@@ -284,41 +303,50 @@ public class Game {
 		ArrayList<Player> winner = null;
 		int[] winPower = null;
 		ArrayList<Card> cards = new ArrayList<Card>();
+
 		//compare all with current best player
-		for(Player p: pl){
+		for (Player p: pl) {
 			cards.clear();
-			if(winner == null) {
+
+			if (winner == null) {
 				winner = new ArrayList<Player>();
 				winner.add(p);
 				cards.addAll(comCards);
+
 				//add two hold cards to comm. cards
 				cards.add(p.getHole()[0]);
 				cards.add(p.getHole()[1]);
 				winPower = Card.getHighestPower(cards); 
-			}else {
+			}
+			else {
 				int[] power;	//power to be compared
 				int compareResult;	//result of comparing
 				cards.addAll(comCards);
+
 				//add two hold cards to comm. cards
 				cards.add(p.getHole()[0]);
 				cards.add(p.getHole()[1]);
 				power = Card.getHighestPower(cards);	
 				compareResult = powerComp.compare(winPower, power);
-				if(compareResult <= 0){	//Player p is better or equal than current "winner"
-					if(compareResult < 0)
-						winner.clear(); //clear winner list
+
+				//Player p is better or equal than current "winner"
+				if (compareResult <= 0) {
+					if (compareResult < 0) winner.clear(); //clear winner list
 					winner.add(p);
-				}	//else no changes needed
+				}
+
+				//else no changes needed
 			}
 		}
 
-		//if only one winner, his win-statistics is increased
-		if(winner.size() == 1) winner.get(0).incWins();
+		// if only one winner, his win-statistics is increased
+		if (winner.size() == 1) winner.get(0).incWins();
 
-		return winner;	//convert list to array and return
+		//convert list to array and return
+		return winner;
 	}
-	
-	/*
+
+	/**
 	 * splits the pot to several winners or even to one winner
 	 * resets the pot to 0
 	 */
@@ -331,7 +359,7 @@ public class Game {
 		}	
 		pot = 0;
 	}
-	
+
 	/**
 	 * Increments the pot with a
 	 * @param a
@@ -339,12 +367,11 @@ public class Game {
 	public void incPot(int a){
 		pot += a;
 	}
-	
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println(Game.getInstance());
-		//Game.getInstance().start();
+		Game.getInstance().start();
 	}
 }
