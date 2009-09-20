@@ -11,15 +11,15 @@ import java.util.Random;
 public class GoodBotPlayer extends Player{
 	private final double foldLimit = 0.01;
 	private final double callLimit = 0.15;
-	
+
 	public GoodBotPlayer(Card[] hole){
 		super(hole);
 	}
-	
+
 	public GoodBotPlayer(String name, int budget){
 		super(name,budget);
 	}
-	
+
 	/*
 	 * contains the decision of the bot on information of current game state
 	 * @see Player#performAction(int)

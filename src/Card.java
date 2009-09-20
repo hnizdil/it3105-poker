@@ -143,7 +143,7 @@ public class Card{
 	 * @param cards (Collection of size 5)
 	 * @return a tuple representing the Card's power
 	 */
-	private static int[] calcCardsPower(ArrayList<Card> cards) {
+	public static int[] calcCardsPower(ArrayList<Card> cards) {
 		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
 		ArrayList<ArrayList<Card>> suitGroups = genSuitGroups(cards);
 		//temporary List to build the tuple
