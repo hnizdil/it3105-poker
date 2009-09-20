@@ -24,7 +24,7 @@ class PreFlopTable
 		try {
 			Scanner sc = new Scanner(new File(file));
 
-			// Start rading tokens in file (every row has exactly 5 tokens)
+			// Start reading tokens in file (every row has exactly 5 tokens)
 			while (sc.hasNext()) {
 				// We don't care about suit, because we need just value
 				c1val = Value.valueOf(sc.next()).ordinal();

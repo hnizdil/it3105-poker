@@ -1,5 +1,4 @@
-/*TODO*/import java.io.File;
-import java.util.ArrayList;
+/*TODO*/import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
 
@@ -116,9 +115,6 @@ public class Game {
 				default:
 			}
 		}
-
-		sc.close();
-
 		deck = Card.gen52Cards();
 		Card.shuffleCards(deck);
 	}
@@ -263,15 +259,18 @@ public class Game {
 	public void start(){
 		Scanner sc = new Scanner(System.in);
 		String ch;
+		int i = 0;
 		do{
 			numberOfGames++;
 			newGame();
 			runGame();
-			do{
+			i++;
+			/*do{
 				System.out.println("Next Game? (y/n): ");
 				ch = sc.next();
 			}while(!(ch.equals("y") || ch.equals("n")));
-		}while(ch.equals("y"));
+		}while(ch.equals("y"));*/
+		}while(i<20);	
 		printGameResult();
 	}
 
