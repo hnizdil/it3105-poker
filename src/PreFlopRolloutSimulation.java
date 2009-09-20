@@ -1,5 +1,6 @@
 import mpi.*;
 import java.io.*;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.ArrayList;
@@ -18,19 +19,16 @@ public class PreFlopRolloutSimulation
 	{
 		MPI.Init(args);
 
-		Intracomm c = MPI.COMM_WORLD;
-
 		int
-			size = c.Size(),
-			rank = c.Rank(),
+			size = MPI.COMM_WORLD.Size(),
+			rank = MPI.COMM_WORLD.Rank(),
 			step = (int)Math.ceil(classes.size() / (float)size);
 
 		// Don't have to do anything fancy, just process rank will do the trick
-		roll(step, rank);
+		roll(step, rank, 100);
 
 		MPI.Finalize();
 
-		//PreFlopRolloutSimulation();
 		//fillECTable();
 	}
 
@@ -66,7 +64,7 @@ public class PreFlopRolloutSimulation
 	 * @param length Length of chunk to get from equivalence classes.
 	 * @param offset Offset to start the chunk. It's in multiples of chunk.
 	 */
-	private static void roll(int length, int offset)
+	private static void roll(int length, int offset, int rounds)
 	{
 		ArrayList<int[]> results = new ArrayList<int[]>();
 		ArrayList<Card> remainder, community, cards;
@@ -79,13 +77,18 @@ public class PreFlopRolloutSimulation
 			lower = offset*length, upper,
 			result, subResult,
 			runCount, runWins, runTies, runLosses,
-			classRounds = 10,
 			plCount,
 			eclassIndex;
 
 		// Get chunk of this process
 		upper = (upper = lower + length) > classes.size() ? classes.size() : upper;
 		classesSet.addAll(classes.subList(lower, upper));
+
+		// Main neverending loop
+		while(true) {
+
+		// Reset results ArrayList
+		results.clear();
 
 		// Loop through all player counts
 		for (plCount = 1; plCount < 10; plCount++) {
@@ -102,8 +105,8 @@ public class PreFlopRolloutSimulation
 				remainder.addAll(allCards);
 				remainder.removeAll(ec);
 
-				// Do classRounds rounds for each equivalence class
-				for (int cr = 0; cr < classRounds; cr++) {
+				// Do rounds rounds for each equivalence class
+				for (int cr = 0; cr < rounds; cr++) {
 					Collections.shuffle(remainder);
 
 					community = new ArrayList<Card>();
@@ -152,6 +155,10 @@ public class PreFlopRolloutSimulation
 		} // Player counts loop
 
 		conn.saveResults(results);
+
+		System.out.println(new Date().getTime() + " - rank: " + MPI.COMM_WORLD.Rank() + ", saved: " + results.size());
+
+		} // Main neverending loop
 	}
 
 	/**

@@ -12,9 +12,13 @@ public class MysqlConnection
 	{
 		try {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			conn = DriverManager.getConnection("jdbc:mysql://mysql.stud.ntnu.no/hnizdil_preflop", "hnizdil", "");
+			conn = DriverManager.getConnection(
+				"jdbc:mysql://mysql.stud.ntnu.no/hnizdil_preflop",
+				"hnizdil", ""
+			);
 		}
 		catch (Exception e) {
+			System.out.println(e);
 		}
 	}
 
@@ -29,16 +33,18 @@ public class MysqlConnection
 		PreparedStatement stmt;
 
 		try {
-			stmt = conn.prepareStatement(
-				"INSERT DELAYED INTO `preflop_ec_runs` (`ec`, `players`, `rounds`, `wins`, `ties`, `losses`) " +
-				"VALUES (?, ?, ?, ?, ?, ?)"
-			);
+			int i = 0;
 
-			for (int[] result : results) {
-				// Save ec, players, runs, wins, ties and losses
-				for (int i = 0; i < result.length; i++) stmt.setInt(i+1, result[i]);
-				stmt.executeUpdate();
+			String sql = "" +
+				"INSERT DELAYED INTO `preflop_ec_runs` " +
+				"(`ec`, `players`, `rounds`, `wins`, `ties`, `losses`) VALUES ";
+
+			for (int[] r : results) {
+				sql += "("+r[0]+","+r[1]+","+r[2]+","+r[3]+","+r[4]+","+r[5]+")";
+				if (++i < results.size()) sql += ",";
 			}
+
+			conn.createStatement().executeUpdate(sql);
 		}
 		catch (SQLException e) {
 			System.out.println(e);
@@ -51,6 +57,7 @@ public class MysqlConnection
 			conn.close();
 		}
 		catch (SQLException e) {
+			System.out.println(e);
 		}
 	}
 }
