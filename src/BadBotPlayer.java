@@ -37,12 +37,12 @@ public class BadBotPlayer extends Player {
 
 		if (comCards.size() > 0) {
 			hand.addAll(comCards);
-			power = Card.calcCardsPower(hand);
+			power = Card.getHighestPower(hand);
 
 			if (power[0] < 2) {
 				act = Action.FOLD;
 			}
-			else if (power[0] > 5) {
+			else if ((power[0] > 5) && (ownBet < maxBet)) {
 				act = Action.RAISE;
 				raise(ownBet + new Random().nextInt(maxBet-ownBet+1));
 			}
@@ -53,7 +53,12 @@ public class BadBotPlayer extends Player {
 		else {
 			act = Action.CALL;
 		}
-
+		switch(act){
+		case CALL:
+			call(); break;
+		case RAISE:
+			raise(new Random().nextInt(maxBet-ownBet)+1+ownBet);
+		}
 		return act;
 	}
 }

@@ -45,13 +45,13 @@ public class GoodBotPlayer extends Player{
 			//TODO values in here determine if player is aggressive in the beginning
 			if(winProbability < foldLimit)
 				act = Action.FOLD;
-			else if(winProbability < callLimit){
+			else if((winProbability < callLimit) || (ownBet == maxBet)){
 				act = Action.CALL;
 				call();
 			}else{
 				act = Action.RAISE;
 				//place randomly a bet between ownBet and maxBet
-				raise(new Random().nextInt(maxBet-ownBet+1)+ownBet);
+				raise(new Random().nextInt(maxBet-ownBet)+1+ownBet);
 			}
 			break;
 		default:	//after Flop
@@ -61,7 +61,7 @@ public class GoodBotPlayer extends Player{
 			double handStrength = calcHandStrength(cards,numberOfActive);
 			if(handStrength < foldLimit)
 				act = Action.FOLD;
-			else if(handStrength < callLimit){
+			else if((handStrength < callLimit) || (ownBet == maxBet)){
 				act = Action.CALL;
 				call();
 			}else{
@@ -122,7 +122,10 @@ public class GoodBotPlayer extends Player{
 					statistic[1]++;	
 		}
 		//equation from script (paper)
-		res = (statistic[0]+(statistic[2]/2))/(statistic[0]+statistic[1]+statistic[2]);
+		double[] temp = new double[3];
+		for(int i=0; i<statistic.length; i++)
+			temp[i] = (double)statistic[i];
+		res = (temp[0]+(temp[2]/2))/(temp[0]+temp[1]+temp[2]);
 		res = Math.pow(res, numberOfActive);
 		return res;
 	}

@@ -142,12 +142,13 @@ public class Card{
 	}
 
 	/*
+	 * not for public use! use getHighestPower()
 	 * ATTENTION: only for 5 cards
 	 * calculates Card's Power for 5 Cards
 	 * @param cards (Collection of size 5)
 	 * @return a tuple representing the Card's power
 	 */
-	public static int[] calcCardsPower(ArrayList<Card> cards) {
+	private static int[] calcCardsPower(ArrayList<Card> cards) {
 		ArrayList<ArrayList<Card>> valGroups = genValueGroups(cards);
 		ArrayList<ArrayList<Card>> suitGroups = genSuitGroups(cards);
 		//temporary List to build the tuple
