@@ -24,28 +24,33 @@ public class MysqlConnection
 		return instance;
 	}
 
-	public static void saveResults(ArrayList<Hashtable<Integer,int[]>> results)
+	public static void saveResults(ArrayList<int[]> results)
 	{
 		PreparedStatement stmt;
 
-		/*
-		stmt = conn.prepareStatement(
-			"INSERT INTO `preflop_ec_runs` (`ec`, `players`, `runs`, `wins`, `ties`, `losses`) " +
-			"VALUES (?, ?, ?, ?, ?)"
-		);
-		*/
+		try {
+			stmt = conn.prepareStatement(
+				"INSERT DELAYED INTO `preflop_ec_runs` (`ec`, `players`, `rounds`, `wins`, `ties`, `losses`) " +
+				"VALUES (?, ?, ?, ?, ?, ?)"
+			);
 
-		for (int i = 0; i < results.size(); i++) {
-			Hashtable<Integer,int[]> ht = results.get(i);
-			Enumeration e = ht.keys();
-			while (e.hasMoreElements()) {
-				Integer key = (Integer)e.nextElement();
-				System.out.print(i + " - " + key + ":\t");
-				for (int el : ht.get(key)) {
-					System.out.print(el + "\t");
-				}
-				System.out.println();
+			for (int[] result : results) {
+				// Save ec, players, runs, wins, ties and losses
+				for (int i = 0; i < result.length; i++) stmt.setInt(i+1, result[i]);
+				stmt.executeUpdate();
 			}
+		}
+		catch (SQLException e) {
+			System.out.println(e);
+		}
+	}
+
+	protected void finalize()
+	{
+		try {
+			conn.close();
+		}
+		catch (SQLException e) {
 		}
 	}
 }
