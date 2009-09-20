@@ -11,7 +11,11 @@ public abstract class Player {
 	protected int budget;	//Players money
 	protected boolean status; //true = player is in the game, false = out
 	protected int ownBet;
+	protected int wins;
 	
+	/*
+	 * Player constructor for "dummy" player for Hand-Strength-Calculations
+	 */
 	protected Player(Card[] hole){
 		this.hole = hole;
 	}
@@ -21,7 +25,11 @@ public abstract class Player {
 		this.name = name;
 		this.budget = budget;
 		status = true;
+		wins = 0;
 	}
+	
+	public void incWins(){ wins++;}
+	public int getWins(){ return wins;}
 	
 	public void setHole(Card h1, Card h2) {
 		hole[0] = h1;

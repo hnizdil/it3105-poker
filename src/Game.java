@@ -13,6 +13,7 @@ public class Game {
 	private int bet;					//current bet
 	private int maxBet;
 	private int blind;
+	private int numberOfGames;
 	private static Game instance;
 	
 	/*
@@ -22,6 +23,7 @@ public class Game {
 		players = new ArrayList<Player>();
 		activePlayers = new ArrayList<Player>();
 		comCards = new ArrayList<Card>();
+		numberOfGames = 0;
 		initGame();
 	}
 	
@@ -69,7 +71,7 @@ public class Game {
 			boolean b;
 			do{
 				b = false;
-				System.out.print("Is player "+(i+1)+" human (h) or good artificial (a) or bad artificial (b)? ");
+				System.out.print("Is player "+(i+1)+" human (h) or good artificial (g) or bad artificial (b)? ");
 				ch = sc.next();
 				if(!(ch.equals("h") || ch.equals("g") || ch.equals("b"))){
 					System.out.println("Wrong input! Try again!");
@@ -203,7 +205,7 @@ public class Game {
 				}
 			}else{
 				//only one player left -> gets the pot
-				assignPot(activePlayers.toArray(new Player[1]));
+				assignPot(activePlayers);
 				gameRunning = false;
 			}
 		}while(gameRunning);
@@ -213,6 +215,7 @@ public class Game {
 		Scanner sc = new Scanner(System.in);
 		String ch;
 		do{
+			numberOfGames++;
 			newGame();
 			runGame();
 			do{
@@ -220,8 +223,14 @@ public class Game {
 				ch = sc.next();
 			}while(!(ch.equals("y") || ch.equals("n")));
 		}while(ch.equals("y"));
+		printGameResult();
 	}
 	
+	private void printGameResult(){
+		System.out.println("Played games: "+numberOfGames);
+		for(Player p: players)
+			System.out.println(p.toString()+" won "+p.getWins()+" times");
+	}
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
 	}
@@ -233,7 +242,7 @@ public class Game {
 		System.out.println();
 	}
 	
-	public Player[] getWinner(ArrayList<Player> pl){
+	public ArrayList<Player> getWinner(ArrayList<Player> pl){
 		ArrayList<Player> winner = null;
 		int[] winPower = null;
 		ArrayList<Card> cards = new ArrayList<Card>();
@@ -264,19 +273,30 @@ public class Game {
 				}	//else no changes needed
 			}
 		}
-		return winner.toArray(new Player[1]);	//convert list to array and return
+		//if only one winner, his win-statistics is increased
+		if(winner.size() == 1)
+			winner.get(0).incWins();
+		return winner;	//convert list to array and return
 	}
 	
 	/*
 	 * splits the pot to several winners or even to one winner
 	 * resets the pot to 0
 	 */
-	private void assignPot(Player[] pa){
-		int amount = pot/pa.length;
-		for(Player p: pa){
-			p.incBudget(amount);
-			System.out.println(p.toString()+" wins "+amount);
-		}
+	private void assignPot(ArrayList<Player> pa){
+		int amount;
+		if(pa.size() == 0){		//all players folded
+			amount = pot/players.size();
+			for(Player p: players)
+				p.incBudget(amount);
+			System.out.println("All folded. Everyone wins "+amount);
+		}else{	
+			amount = pot/pa.size();
+			for(Player p: pa){
+				p.incBudget(amount);
+				System.out.println(p.toString()+" wins "+amount);
+			}
+		}	
 		pot = 0;
 	}
 	public void incPot(int a){
