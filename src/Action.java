@@ -1,11 +1,10 @@
 /**
  * Represents actions a player can perform
- * @author Robert Braunschweig
+ * @author rb, jh
  *
  */
 public enum Action {
 	CALL,
 	RAISE,
 	FOLD,
-	//ALLIN
 }
