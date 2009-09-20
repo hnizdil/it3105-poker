@@ -1,3 +1,4 @@
+import java.util.Random;
 import java.util.Arrays;
 import java.util.ArrayList;
 
@@ -23,29 +24,34 @@ public class BadBotPlayer extends Player {
 	public Action performAction(int currentBet)
 	{
 		int
-			pot = game.getPot(),
-			maxBet = game.getMaxBet();
+			pot = Game.getInstance().getPot(),
+			maxBet = Game.getInstance().getMaxBet();
 
 		int[] power;
 
 		ArrayList<Card>
 			hand = new ArrayList<Card>(Arrays.asList(hole)),
-			comCards = game.getComCards();
+			comCards = Game.getInstance().getComCards();
 
 		Action act = Action.FOLD;
 
-		switch (comCards.size()) {
-			// Preflop
-			case 0:
+		if (comCards.size() > 0) {
+			hand.addAll(comCards);
+			power = Card.calcCardsPower(hand);
+
+			if (power[0] < 2) {
+				act = Action.FOLD;
+			}
+			else if (power[0] > 5) {
+				act = Action.RAISE;
+				raise(ownBet + new Random().nextInt(maxBet-ownBet+1));
+			}
+			else {
 				act = Action.CALL;
-				break;
-
-			// Postflop
-			case 3:
-				break;
-
-			// Turn or turn and river
-			default:
+			}
+		}
+		else {
+			act = Action.CALL;
 		}
 
 		return act;

@@ -60,16 +60,18 @@ class PreFlopTable
 	public static double getWinningProbability(Card[] hole, int players)
 	{
 		int
-			i,
+			i = 0,
 			suited = hole[0].getSuit() == hole[1].getSuit() ? 1 : 0,
 			c1val  = hole[0].getValue().ordinal(),
 			c2val  = hole[1].getValue().ordinal();
 
+		if (instance == null) getInstance();
+
 		// Loop through all equivalence classes
 		for (i = 0; i < classes.length; i++) {
 			// Compare suited and number of players
-			if (classes[i][2] != suited)  continue;
-			if (classes[i][3] != players) continue;
+			if (classes[i][2] != suited)    continue;
+			if (classes[i][3] != players-1) continue;
 
 			// Compare cards
 			if (

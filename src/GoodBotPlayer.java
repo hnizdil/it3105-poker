@@ -29,7 +29,7 @@ public class GoodBotPlayer extends Player{
 		int pot = Game.getInstance().getPot();
 		int numberOfActive = Game.getInstance().getNumberOfActive();
 		int maxBet = Game.getInstance().getMaxBet();
-		double winProbability = PreFlopTable.getWinningProbability(hole, numberOfActive);
+		double winProbability = 0;
 		ArrayList<Card> comCards = Game.getInstance().getComCards();
 		Action act = Action.FOLD;	//default value
 		
@@ -41,6 +41,7 @@ public class GoodBotPlayer extends Player{
 		
 		switch(comCards.size()){
 		case 0:	//pre-flop
+			winProbability = PreFlopTable.getWinningProbability(hole, numberOfActive);
 			//TODO values in here determine if player is aggressive in the beginning
 			if(winProbability < foldLimit)
 				act = Action.FOLD;
