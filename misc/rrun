@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mysql \
+	hnizdil_preflop \
+	-h mysql.stud.ntnu.no \
+	-u hnizdil \
+	-p \
+	< preflop-rrun.sql
