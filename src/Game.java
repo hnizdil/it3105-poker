@@ -45,8 +45,7 @@ public class Game {
 	 * get-set methods
 	 */
 	public static Game getInstance(){
-		if(instance == null)
-			instance = new Game();
+		if(instance == null) instance = new Game();
 		return instance;
 	}
 	
@@ -68,42 +67,49 @@ public class Game {
 	 * scans parameters from keyboard: number of players, initial budget,
 	 * generation of deck
 	 */
-	private void initGame(){
+	private void initGame()
+	{
 		Scanner sc = new Scanner(System.in);
+
 		int budget, playNum;
+
 		System.out.print("Number of all players (2-10): ");
 		playNum = sc.nextInt();
+
 		System.out.print("Initial budget of every player: ");
 		budget = sc.nextInt();
+
 		System.out.print("Maximum bet each betting round: ");
 		maxBet = sc.nextInt();
+
 		System.out.print("Blind (only one Blind for the Player who goes first): ");
 		blind = sc.nextInt();
+
 		//Player instantiations
-		for(int i=0; i<playNum; i++){
+		for(int i = 0; i < playNum; i++){
 			String ch, name;
 			boolean b;
-			do{
-				b = false;
+
+			do {
 				System.out.print("Is player "+(i+1)+" human (h) or good artificial (g) or bad artificial (b)? ");
 				ch = sc.next();
-				if(!(ch.equals("h") || ch.equals("g") || ch.equals("b"))){
+
+				if(b = !(ch.equals("h") || ch.equals("g") || ch.equals("b"))) {
 					System.out.println("Wrong input! Try again!");
-					b = true;
-				}	
-			} while(b);	
+				}
+			} while(b);
+
 			System.out.print("Name of the new player: ");
 			name = sc.next();
+
 			//3 different Player types
-			if(ch.equals("h"))
-				players.add(new HumanPlayer(name,budget));
-			else if(ch.equals("g"))
-				players.add(new GoodBotPlayer(name,budget));
-			else if(ch.equals("b"))
-				players.add(new BadBotPlayer(name,budget));
+			if(ch.equals("h"))      players.add(new HumanPlayer(name,budget));
+			else if(ch.equals("g")) players.add(new GoodBotPlayer(name,budget));
+			else if(ch.equals("b")) players.add(new BadBotPlayer(name,budget));
 		}
-		deck = Card.gen52Cards();
-		Card.shuffleCards(deck);
+
+		//deck = Card.gen52Cards();
+		//Card.shuffleCards(deck);
 	}
 	
 	/*
@@ -305,9 +311,10 @@ public class Game {
 				}	//else no changes needed
 			}
 		}
+
 		//if only one winner, his win-statistics is increased
-		if(winner.size() == 1)
-			winner.get(0).incWins();
+		if(winner.size() == 1) winner.get(0).incWins();
+
 		return winner;	//convert list to array and return
 	}
 	
@@ -337,6 +344,7 @@ public class Game {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new Game().start();
+		System.out.println(Game.getInstance());
+		//Game.getInstance().start();
 	}
 }
