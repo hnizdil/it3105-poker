@@ -1,4 +1,5 @@
-/*TODO*/import java.util.ArrayList;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
 
@@ -15,8 +16,8 @@ import java.util.Scanner;
  *@author rb, jh
  *@version 20.09.2009
  */
-public class Game {
-
+public class Game
+{
 	private ArrayList<Player> players;			//2-10 players
 	private ArrayList<Player> activePlayers; 	// all player who did not fold
 	private ArrayList<Card> deck;				//52 cards
@@ -27,6 +28,9 @@ public class Game {
 	private int blind;							//bet of first player in first round
 	private int numberOfGames;
 	private static Game instance;
+
+	private static int noOfGames = 1;
+	private static File commandFile = null;
 
 	//Comparator for hand power
 	private static final HandComparator powerComp = HandComparator.getInstance();
@@ -70,7 +74,21 @@ public class Game {
 	 */
 	private void initGame()
 	{
-		Scanner sc = new Scanner(System.in);
+		Scanner sc = null;
+
+		// Command file not specified, we'll read stdin
+		if (commandFile == null) {
+			sc = new Scanner(System.in);
+		}
+		// Read the file, baby
+		else {
+			try {
+				sc = new Scanner(commandFile);
+			}
+			catch (Exception e) {
+				System.out.println(e);
+			}
+		}
 
 		int budget, playNum;
 
@@ -132,15 +150,18 @@ public class Game {
 		for(Player p: players){
 			//deal two cards to every player
 			p.setHole(deck.get(0), deck.get(1));
+
 			//remove that two cards from deck
 			deck.remove(0);
 			deck.remove(0);
+
 			//in case of a human player the cards are shown on the screen
 			if(p instanceof HumanPlayer){
 				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
 						" Press any key and return for showing the cards!");
 				Scanner sc = new Scanner(System.in);
 				sc.next();
+				sc.close();
 				Card[] hold = p.getHole();
 				System.out.println(hold[0].toString()+hold[1].toString());
 			}
@@ -256,21 +277,19 @@ public class Game {
 	 * Provides a loop to play more than 1 Game.
 	 * Prints the result of all games in the end.
 	 */
-	public void start(){
-		Scanner sc = new Scanner(System.in);
-		String ch;
+	public void start()
+	{
 		int i = 0;
-		do{
+		String ch;
+		Scanner sc = new Scanner(System.in);
+
+		do {
 			numberOfGames++;
 			newGame();
 			runGame();
 			i++;
-			/*do{
-				System.out.println("Next Game? (y/n): ");
-				ch = sc.next();
-			}while(!(ch.equals("y") || ch.equals("n")));
-		}while(ch.equals("y"));*/
-		}while(i<1000);	
+		} while (i < noOfGames);
+
 		printGameResult();
 	}
 
@@ -351,7 +370,7 @@ public class Game {
 	 */
 	private void assignPot(ArrayList<Player> pa){
 		int amount;
-		amount = pot/pa.size();
+		amount = pot / pa.size();
 		for(Player p: pa){
 			p.incBudget(amount);
 			System.out.println(p.toString()+" wins "+amount);
@@ -370,7 +389,14 @@ public class Game {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception
+	{
+		// Number of games
+		if (args.length == 1) noOfGames = Integer.parseInt(args[0]);
+
+		// Command file
+		if (args.length > 2) commandFile = new File(args[1]);
+
 		Game.getInstance().start();
 	}
 }
