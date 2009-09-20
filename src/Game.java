@@ -270,7 +270,7 @@ public class Game {
 				ch = sc.next();
 			}while(!(ch.equals("y") || ch.equals("n")));
 		}while(ch.equals("y"));*/
-		}while(i<20);	
+		}while(i<1000);	
 		printGameResult();
 	}
 
