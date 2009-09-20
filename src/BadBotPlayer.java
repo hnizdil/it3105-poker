@@ -26,7 +26,8 @@ public class BadBotPlayer extends Player {
 		int
 			pot = Game.getInstance().getPot(),
 			maxBet = Game.getInstance().getMaxBet();
-
+		int numberOfActive = Game.getInstance().getNumberOfActive();
+		
 		int[] power;
 
 		ArrayList<Card>
@@ -35,6 +36,10 @@ public class BadBotPlayer extends Player {
 
 		Action act = Action.FOLD;
 
+		if(numberOfActive == 1){
+			call();
+			return Action.CALL;
+		}
 		if (comCards.size() > 0) {
 			hand.addAll(comCards);
 			power = Card.getHighestPower(hand);
@@ -42,9 +47,8 @@ public class BadBotPlayer extends Player {
 			if (power[0] < 2) {
 				act = Action.FOLD;
 			}
-			else if ((power[0] > 5) && (ownBet < maxBet)) {
+			else if ((power[0] > 3) && (ownBet < maxBet)) {
 				act = Action.RAISE;
-				raise(ownBet + new Random().nextInt(maxBet-ownBet+1));
 			}
 			else {
 				act = Action.CALL;
