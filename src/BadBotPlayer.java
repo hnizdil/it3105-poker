@@ -50,7 +50,7 @@ public class BadBotPlayer extends Player {
 			if (power[0] < 2) {
 				act = Action.FOLD;
 			}
-			else if ((power[0] > 3) && (ownBet < maxBet) && (raises < 1)) {
+			else if ((power[0] > 4) && (ownBet < maxBet) && (raises < 1)) {
 				act = Action.RAISE;
 				raise(ownBet + new Random().nextInt(maxBet-ownBet)+1);
 			}

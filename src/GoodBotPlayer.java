@@ -73,7 +73,7 @@ public class GoodBotPlayer extends Player
 		else {
 			double handStrength = calcHandStrength(comCards, numberOfActive);
 
-			System.err.println(handStrength);
+			//System.err.println(handStrength);
 
 			if (handStrength < foldLimit) {
 				act = Action.FOLD;
@@ -85,7 +85,7 @@ public class GoodBotPlayer extends Player
 			else {
 				//place randomly a bet between ownBet and maxBet
 				act = Action.RAISE;
-				raise(ownBet + new Random().nextInt(maxBet-ownBet)+1);
+				raise(ownBet+1 + (int)Math.floor((maxBet-ownBet-1)*handStrength));
 			}
 		}
 
