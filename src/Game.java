@@ -208,7 +208,7 @@ public class Game
 
 		// Announce beginning of the game
 		System.out.println("\n\n\n=== GAME " + numberOfGames + " BEGINS ===");
-		//System.err.println("game: " + numberOfGames);
+		System.err.println("game: " + numberOfGames);
 
 		//before the first betting round
 		dealCards();
@@ -221,7 +221,7 @@ public class Game
 			System.out.println("\n= Another round begins =");
 			System.out.println("Current pot: "+pot+", current bet: "+bet);
 			System.out.println(comCards);
-			//System.err.println("round: pot " + pot + " bet " + bet);
+			System.err.println("round: pot " + pot + " bet " + bet);
 			ListIterator<Player> it = activePlayers.listIterator();
 
 			// asks all active players (who haven't folded) for their next Action
@@ -234,14 +234,14 @@ public class Game
 					case FOLD:
 						p.initRaises();
 						it.remove();
-						//System.err.println(p + ": fold");
+						System.err.println(p + ": fold");
 						break;
 					case CALL:
-						//System.err.println(p + ": call");
+						System.err.println(p + ": call");
 						break;
 					case RAISE:
 						System.out.println("New bet: "+bet);
-						//System.err.println(p + ": bet (" + bet + ")");
+						System.err.println(p + ": bet (" + bet + ")");
 				}	
 			}
 
@@ -304,6 +304,10 @@ public class Game
 		while (numberOfGames++ < noOfGames) {
 			newGame();
 			runGame();
+
+			for (Player p: players) {
+				System.err.println("game: " + p + " budget " + p.getBudget());
+			}
 		}
 
 		printGameResult();
@@ -316,7 +320,7 @@ public class Game
 				p + " won " + p.getWins() + " times " +
 				"and has " + p.getBudget() + " money"
 			);
-			//System.err.println("game: " + p + " wins " + p.getWins() + " money " + p.getBudget());
+			System.err.println("game: " + p + " wins " + p.getWins() + " money " + p.getBudget());
 		}
 	}
 
@@ -388,7 +392,7 @@ public class Game
 		for(Player p: pa){
 			p.incBudget(amount);
 			System.out.println(p.toString()+" wins " + amount);
-			//System.err.println("game: " + p + " wins " + amount);
+			System.err.println("game: " + p + " wins " + amount);
 		}	
 		pot = 0;
 	}
