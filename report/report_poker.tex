@@ -1,0 +1,92 @@
+\documentclass[%
+%a5paper,							% alle weiteren Papierformat einstellbar
+%landscape,						% Querformat
+12pt,								% Schriftgröße (12pt, 11pt (Standard))
+%BCOR1cm,							% Bindekorrektur, bspw. 1 cm
+%DIVcalc,							% führt die Satzspiegelberechnung neu aus
+%											  s. scrguide 2.4
+%twoside,							% Doppelseiten
+%twocolumn,						% zweispaltiger Satz
+%halfparskip*,				% Absatzformatierung s. scrguide 3.1
+%headsepline,					% Trennline zum Seitenkopf	
+%footsepline,					% Trennline zum Seitenfuß
+titlepage						% Titelei auf eigener Seite
+%normalheadings,			% Überschriften etwas kleiner (smallheadings)
+%idxtotoc,						% Index im Inhaltsverzeichnis
+%liststotoc,					% Abb.- und Tab.verzeichnis im Inhalt
+%bibtotoc,						% Literaturverzeichnis im Inhalt
+%abstracton,					% Überschrift über der Zusammenfassung an	
+%leqno,   						% Nummerierung von Gleichungen links
+%fleqn,								% Ausgabe von Gleichungen linksbündig
+%draft								% überlangen Zeilen in Ausgabe gekennzeichnet
+]
+{scrartcl}
+
+%\pagestyle{empty}	
+%\pagestyle{headings}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[ansinew]{inputenc}
+
+%\usepackage{lmodern}
+
+\usepackage{graphicx} 
+%\usepackage{subfig} 
+\usepackage{color}
+\usepackage{listings}
+
+\begin{document}
+\lstset{		language=Java,
+				basicstyle=\ttfamily,
+				showstringspaces=false,
+				commentstyle=\itshape\color[rgb]{0.2,0.6,0.2},
+				%numbers=left,
+				keywordstyle=\bfseries\color[rgb]{0.6,0.0,0.4},
+				tabsize=4
+				}
+\pagestyle{empty}
+
+%\titlehead{Titelkopf }
+\subject{Report}
+\title{AI Poker Players}
+\subtitle{Course IT3105}
+\author{Robert Braunschweig \and Jan Hn\'{i}zdil}
+%\and{Der Name des Co-Autoren}
+%\thanks{Fußnote}		
+%\date{}						
+%\publishers{Herausgeber}
+
+\maketitle 
+
+
+%\begin{abstract}
+
+
+%\end{abstract}
+\tableofcontents		
+%\listoftables			
+%\listoffigures				
+\newpage
+
+\section{Introduction}
+
+\section{Basic Approach}
+
+\section{The Game Simulator}
+\subsection{Concept}
+\subsection{Implementation}
+
+\section{AI Poker Player}
+
+\subsection{Phase I Player}
+\subsubsection{Structure}
+\subsubsection{Testing}
+
+\subsection{Phase II Player}
+\subsubsection{Pre-Flop Rollout-Simulation}
+\subsubsection{Hand-Strength Calculation}
+
+\subsubsection{Testing}
+\section{Problems}
+\section{Conclusion}
+\end{document}
