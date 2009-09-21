@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
 
+@SuppressWarnings("unchecked")
+
 /**
  * Game is the basic frame in which the Poker game runs.
  * It organizes the Players and active Players, holds all relevant game
