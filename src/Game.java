@@ -204,24 +204,28 @@ public class Game
 		boolean betReady = false;
 		boolean gameRunning = true;
 
+		// Announce beggining of the game
+		System.out.println("\n\n\n=== GAME " + numberOfGames + " BEGINS ===");
+
 		//before the first betting round
 		dealCards();
 		activePlayers.get(0).decBudget(blind);
-		pot = blind;
-		bet = blind;
+		pot = bet = blind;
 
-		//beginning of betting round
+		// beginning of betting round
 		do {
-			//prints the current game state
+			// prints the current game state
+			System.out.println("\n= Another round begins =");
 			System.out.println("Current pot: "+pot+", current bet: "+bet);
-			printComCards();
+			System.out.println(comCards);
 			ListIterator<Player> it = activePlayers.listIterator();
 
-			//asks all active players (who didn't fold) for their next Action
-			while(it.hasNext()){
+			// asks all active players (who didn't fold) for their next Action
+			while (it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
 				printAction(p.toString(), a);
+
 				switch(a){
 					case FOLD:
 						it.remove();
@@ -233,43 +237,50 @@ public class Game
 				}	
 			}
 
-			//all players performed an Action
+			// all players performed an Action
 
 			if(activePlayers.size() > 1){
 				//check all active players if they are "in the game"
-				for(Player pl: activePlayers){	
-					if(pl.getBet() == bet)
+				for (Player pl: activePlayers) {
+					if (pl.getBet() == bet) {
 						betReady = true;
-					else{
+					}
+					else {
 						betReady = false;
 						break;
 					}
 				}
-				if(betReady){	//betting round is over -> next community Card(s)
+
+				//betting round is over -> next community Card(s)
+				if (betReady) {
 					bet = 0;
-					for(Player ap: activePlayers)	//set ownBet to 0
-						ap.initBet();
-					switch(comCards.size()){
-						case 0:		//the Flop
-							dealComCards(3);
-							break;
-						case 3:		//the Turn
-							dealComCards(1);
-							break;
-						case 4:		//the River
-							dealComCards(1);
-							break;
-						case 5:		//Showdown
+
+					//set ownBet to 0
+					for(Player ap: activePlayers) ap.initBet();
+
+					switch (comCards.size()) {
+						// The flop
+						case 0: dealComCards(3); break;
+
+						// The turn
+						case 3: dealComCards(1); break;
+
+						// The river
+						case 4: dealComCards(1); break;
+
+						// Showdown
+						case 5:
 							assignPot(getWinner(activePlayers));
 							gameRunning = false;
 					}
 				}
 				//only one player left -> gets the pot
-			}else{
+			}
+			else {
 				assignPot(activePlayers);
 				gameRunning = false;
 			}
-		}while(gameRunning);
+		} while (gameRunning);
 	}
 
 	/**
@@ -279,35 +290,26 @@ public class Game
 	 */
 	public void start()
 	{
-		int i = 0;
-		String ch;
-		Scanner sc = new Scanner(System.in);
-
-		do {
-			numberOfGames++;
+		while (numberOfGames++ < noOfGames) {
 			newGame();
 			runGame();
-			i++;
-		} while (i < noOfGames);
+		}
 
 		printGameResult();
 	}
 
 	private void printGameResult(){
 		System.out.println("Played games: "+numberOfGames);
-		for(Player p: players)
-			System.out.println(p.toString()+" won "+p.getWins()+" times");
+		for(Player p: players) {
+			System.out.println(
+				p + " won " + p.getWins() + " times " +
+				"and has " + p.getBudget() + " money"
+			);
+		}
 	}
 
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
-	}
-
-	private void printComCards(){
-		for(Card c: comCards){
-			System.out.print(c.toString());
-		}
-		System.out.println();
 	}
 
 	/**
@@ -373,7 +375,7 @@ public class Game
 		amount = pot / pa.size();
 		for(Player p: pa){
 			p.incBudget(amount);
-			System.out.println(p.toString()+" wins "+amount);
+			System.out.println(p.toString()+" wins " + amount);
 		}	
 		pot = 0;
 	}
@@ -392,10 +394,10 @@ public class Game
 	public static void main(String[] args) throws Exception
 	{
 		// Number of games
-		if (args.length == 1) noOfGames = Integer.parseInt(args[0]);
+		if (args.length > 0) noOfGames = Integer.parseInt(args[0]);
 
 		// Command file
-		if (args.length > 2) commandFile = new File(args[1]);
+		if (args.length > 1) commandFile = new File(args[1]);
 
 		Game.getInstance().start();
 	}
