@@ -31,6 +31,7 @@ titlepage						% Titelei auf eigener Seite
 %\usepackage{lmodern}
 
 \usepackage{graphicx} 
+\usepackage{booktabs} 
 %\usepackage{subfig} 
 \usepackage{color}
 \usepackage{listings}
@@ -46,7 +47,7 @@ titlepage						% Titelei auf eigener Seite
 				}
 \pagestyle{empty}
 
-%\titlehead{Titelkopf }
+%\titlehead{Titelkopf}
 \subject{Report}
 \title{AI Poker Players}
 \subtitle{Course IT3105}
@@ -80,13 +81,285 @@ titlepage						% Titelei auf eigener Seite
 
 \subsection{Phase I Player}
 \subsubsection{Structure}
+
+We call phase I player BadBot and as every player in our game, he extends the
+\texttt{Player} class. BadBot has only one method, which decides on action to take. He
+differentiates between pre-flop and post-flop phases. In pre-flop phase, the bot
+just calls. Unlike GoodBot (discussed later), bad one doesn't utilize any
+pre-flop rollout simulation data.
+
+After the flop cards have come out, bot can calculate its hand power, which is
+done by the \texttt{calcCardsPower()} method in \texttt{Card} class. This method
+finds the strongest hand in the supplied cards and returns array of integers as
+proposed in the paper. The first number in the array represents the type of hand
+-- one for high card, two for one pair up to nine for a straight flush. If the
+bot has weaker hand than one pair (first number is less than two) he folds. On
+the other hand, when having at least straight (first number bigger than four),
+bot raises to the random amount which is between his own bet and maximal round
+bet. He's allowed to raise only once per round, so he just calls if raised
+already. In the remaining cases bot calls to stay in the game. Also when he
+stays alone in the game, call occur so he can have the pot.
+
+In conclusion our BadBot doesn't do anything fancy and only tries to obey the
+basic rules of Texas Hold 'Em poker game.
+
 \subsubsection{Testing}
+
+We did basic testing of bots by letting them play. \texttt{Game} class takes
+care of running the game by dealing the cards, running game rounds and splitting
+the pot at the end. Game queries the active players about their actions during
+round and decides on winner at the end of the final round.
+
+Game can take two parameters. First set how many games should players play and
+the second one is the name of the file with the initial commands. Those commands
+set up the game at the beginning which involves number of players, initial
+budget of players, max bet per round, etc. Game simulation is described better
+in \textit{The Game Simulator} section.
+
+As proposed in the project paper, we ran five different 1000-hand runs of game
+eahc involving four BadBot players. Command used to run one 1000-hand run looks
+like \texttt{java Game 1000 game-p1.txt}, where \texttt{game-p1.txt} is the file
+containing game initialization commands. Results of these runs are summarized in
+following five tables. Initial budget of each player was 10\,000 money with 500
+being max bet per round.
+
+\begin{center}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{First 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1 & 140 &  $-9\,922$ \\
+BAD2 & 149 &  $91\,520$ \\
+BAD3 & 126 & $-71\,487$ \\
+BAD4 & 149 &  $29\,889$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Second 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1 & 144 & $25\,910$ \\
+BAD2 & 154 & $-61\,446$ \\
+BAD3 & 147 & $-48\,897$ \\
+BAD4 & 166 & $124\,425$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Third 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1 & 147 & $143\,959$ \\
+BAD2 & 155 & $182\,682$ \\
+BAD3 & 142 & $-82\,924$ \\
+BAD4 & 111 & $-203\,721$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Fourth 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1 & 157 & $-38\,491$ \\
+BAD2 & 139 & $35\,140$ \\
+BAD3 & 140 & $43\,494$ \\
+BAD4 & 143 & $-147$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Fifth 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1 & 141 & $30\,258$ \\
+BAD2 & 132 & $36\,669$ \\
+BAD3 & 155 & $28\,031$ \\
+BAD4 & 134 & $-54\,965$ \\
+\bottomrule
+\end{tabular}
+
+\end{center}
+
+%TODO more tables
+
 
 \subsection{Phase II Player}
-\subsubsection{Pre-Flop Rollout-Simulation}
+
+\subsubsection{Pre-Flop Rollout Simulation}
+
+This simulation estimates the chances of hole card pair winning the whole game.
+It's done before the flop cards are put in. We know only two hole cards and set
+other players cards and community cards randomly. Now we're able to compare our
+hand with other hands and see how it performs. This is just one round and since
+it's based on randomness, we should run as many rounds as we can.
+
+We could also calculate hand winning chance by concerning all possible
+combinations of final card setups, but the number of these combinations is so
+large, that we can't accomplish it in reasonable computation time. That's why we
+do the simulation.
+
+It's possible to decrease number of hole pairs we need to simulate by using
+equivalence classes as described in the paper. Equivalence classes are of three
+types:
+
+\begin{enumerate}
+\item unpaired and unsuited -- 78 combinations;
+\item unpaired and suited -- 78 combinations;
+\item pairs with the same value -- 13 combinations.
+\end{enumerate}
+
+That gives us 169 possible equivalence classes together. For each class, we run
+at least 1000 rollout simulations recording number of wins, ties and losses.
+From those numbers it's easy to calculate winning probability of the equivalence
+class (and the hole card pair that's in the class). It's also essential to
+differentiate probabilities by the number of players at the table. Having data
+like this, player finds his hole card pair in the table entry (with the number
+of players matching) and gets the winning probability.
+
+For calculating the rollout simulations we used the cluster machine available to
+NTNU students who have parallel programming course. Using MPJ (Java wrapper to
+the MPI -- Message Passing Interface) we were able to run simulations parallely
+on eight processors. Each processor got even part of the 169-item array of
+equivalence classes and then ran simulations for each pair and number of players
+going from two to ten. We managed to run almost five million runs for each
+equivalence class, which gives us a little bit more then 500\,000 rollouts for
+each class and each number of players.
+
+Results of the rollouts were stored in the MySQL database. Then simple SQL query
+was run to calculate probabilities per each class and each number of players.
+Results of this query were stored into textfile approximately 40\,kB in size.
+This file (\texttt{PreFlopTable.dat}) is used by the \texttt{PreFlopTable}
+class, which pulls the probabilities out and stores them into internal Java
+data structure. Our GoodBot player can then easily use the
+\texttt{getWinningProbability()} method of the \texttt{PreFlopTable} class to
+get winning probability for his hole pair. The method takes two arguments --
+hole cards and number of players in the game.
+
 \subsubsection{Hand-Strength Calculation}
 
+
 \subsubsection{Testing}
+
+Given above techniques GoodBot player can do better decisions on which actions
+to take. In the pre-flop phase he uses the hole pair winning probabilities to
+decide on folding, calling or even raising. Here comes a little tricky part
+which is setting the probability thresholds. If the winning probability is less
+than 0.085 our bot folds. Between 0.085 and 0.2 he calls and with higher
+probability he raises random amount.
+
+In the post-flop phases our bot has more information and hopefully can do better
+decisions. He uses hand strength calculated according to the above subsection.
+Threshold for those phases are 0.2 and 0.5. When raising, GoodBot takes into
+account his hand strength.
+
+As paper proposed, we again ran five 1000-hand game runs involving four BadBot
+and four GoodBot players.
+
+\begin{center}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{First 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1&133&-196300\\
+BAD2&115&-598414\\
+BAD3&132&-1077654\\
+BAD4&122&-1569593\\
+GOOD1&53&850387\\
+GOOD2&55&752577\\
+GOOD3&67&1155566\\
+GOOD4&69&763426\\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Second 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1&119&-496395\\
+BAD2&133&-409540\\
+BAD3&107&-1200254\\
+BAD4&135&-1457898\\
+GOOD1&61&910192\\
+GOOD2&54&872461\\
+GOOD3&58&716223\\
+GOOD4&68&1145209\\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Third 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1&129&-858307\\
+BAD2&124&-719593\\
+BAD3&94&-1343100\\
+BAD4&146&-1106336\\
+GOOD1&66&1354768\\
+GOOD2&53&611992\\
+GOOD3&59&1118677\\
+GOOD4&65&1021894\\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Fourth 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1&129&-1006496\\
+BAD2&120&-899251\\
+BAD3&108&-654700\\
+BAD4&163&-551934\\
+GOOD1&60&1031790\\
+GOOD2&48&409538\\
+GOOD3&63&958067\\
+GOOD4&63&792984\\
+\bottomrule
+\end{tabular}
+
+\vspace{5pt}
+\begin{tabular}{lrr}
+\toprule
+\multicolumn{3}{c}{Fifth 1000-hand run} \\
+Player & Wins & Final budget \\
+\midrule
+BAD1&130&-910942\\
+BAD2&112&-663131\\
+BAD3&112&-1655700\\
+BAD4&147&-1299193\\
+GOOD1&50&700803\\
+GOOD2&75&1764724\\
+GOOD3&59&1198982\\
+GOOD4&61&944450\\
+\bottomrule
+\end{tabular}
+
+\end{center}
+
+
 \section{Problems}
+
 \section{Conclusion}
+
+
 \end{document}
