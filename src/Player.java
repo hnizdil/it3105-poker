@@ -6,8 +6,8 @@ import java.util.ArrayList;
  * @author Robert Braunschweig
  *
  */
-public abstract class Player {
-	
+public abstract class Player
+{
 	protected Card[] hole;	//hold cards
 	protected String name;	//Players name
 	protected int budget;	//Players money
