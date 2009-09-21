@@ -25,21 +25,24 @@ public class BadBotPlayer extends Player {
 	{
 		int
 			pot = Game.getInstance().getPot(),
-			maxBet = Game.getInstance().getMaxBet();
-		int numberOfActive = Game.getInstance().getNumberOfActive();
-		
+			maxBet = Game.getInstance().getMaxBet(),
+			active = Game.getInstance().getNumberOfActive();
+
 		int[] power;
 
 		ArrayList<Card>
 			hand = new ArrayList<Card>(Arrays.asList(hole)),
 			comCards = Game.getInstance().getComCards();
 
-		Action act = Action.FOLD;
-
-		if(numberOfActive == 1){
+		if (active == 1) {
 			call();
 			return Action.CALL;
 		}
+
+		// Default action is to fold
+		Action act = Action.FOLD;
+
+		// We're after the flop
 		if (comCards.size() > 0) {
 			hand.addAll(comCards);
 			power = Card.getHighestPower(hand);
@@ -49,20 +52,19 @@ public class BadBotPlayer extends Player {
 			}
 			else if ((power[0] > 3) && (ownBet < maxBet) && (raises < 1)) {
 				act = Action.RAISE;
+				raise(ownBet + new Random().nextInt(maxBet-ownBet)+1);
 			}
 			else {
 				act = Action.CALL;
+				call();
 			}
 		}
+		// It's preflop, we will just call
 		else {
 			act = Action.CALL;
+			call();
 		}
-		switch(act){
-		case CALL:
-			call(); break;
-		case RAISE:
-			raise(new Random().nextInt(maxBet-ownBet)+1+ownBet);
-		}
+
 		return act;
 	}
 }

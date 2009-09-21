@@ -1,4 +1,5 @@
-/*TODO*/import java.util.ArrayList;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.Scanner;
 
@@ -15,8 +16,8 @@ import java.util.Scanner;
  *@author rb, jh
  *@version 20.09.2009
  */
-public class Game {
-
+public class Game
+{
 	private ArrayList<Player> players;			//2-10 players
 	private ArrayList<Player> activePlayers; 	// all player who did not fold
 	private ArrayList<Card> deck;				//52 cards
@@ -27,6 +28,9 @@ public class Game {
 	private int blind;							//bet of first player in first round
 	private int numberOfGames;
 	private static Game instance;
+
+	private static int noOfGames = 1;
+	private static File commandFile = null;
 
 	//Comparator for hand power
 	private static final HandComparator powerComp = HandComparator.getInstance();
@@ -70,7 +74,21 @@ public class Game {
 	 */
 	private void initGame()
 	{
-		Scanner sc = new Scanner(System.in);
+		Scanner sc = null;
+
+		// Command file not specified, we'll read stdin
+		if (commandFile == null) {
+			sc = new Scanner(System.in);
+		}
+		// Read the file, baby
+		else {
+			try {
+				sc = new Scanner(commandFile);
+			}
+			catch (Exception e) {
+				System.out.println(e);
+			}
+		}
 
 		int budget, playNum;
 
@@ -132,15 +150,18 @@ public class Game {
 		for(Player p: players){
 			//deal two cards to every player
 			p.setHole(deck.get(0), deck.get(1));
+
 			//remove that two cards from deck
 			deck.remove(0);
 			deck.remove(0);
+
 			//in case of a human player the cards are shown on the screen
 			if(p instanceof HumanPlayer){
 				System.out.println("The Hold cards for "+p.toString()+" (other humans must look away)." +
 						" Press any key and return for showing the cards!");
 				Scanner sc = new Scanner(System.in);
 				sc.next();
+				sc.close();
 				Card[] hold = p.getHole();
 				System.out.println(hold[0].toString()+hold[1].toString());
 			}
@@ -185,75 +206,92 @@ public class Game {
 		boolean betReady = false;
 		boolean gameRunning = true;
 
+		// Announce beginning of the game
+		System.out.println("\n\n\n=== GAME " + numberOfGames + " BEGINS ===");
+		System.err.println("game: " + numberOfGames);
+
 		//before the first betting round
 		dealCards();
 		activePlayers.get(0).decBudget(blind);
-		pot = blind;
-		bet = blind;
+		pot = bet = blind;
 
-		//beginning of betting round
+		// beginning of betting round
 		do {
-			//prints the current game state
+			// prints the current game state
+			System.out.println("\n= Another round begins =");
 			System.out.println("Current pot: "+pot+", current bet: "+bet);
-			printComCards();
+			System.out.println(comCards);
+			System.err.println("round: pot " + pot + " bet " + bet);
 			ListIterator<Player> it = activePlayers.listIterator();
 
-			//asks all active players (who didn't fold) for their next Action
-			while(it.hasNext()){
+			// asks all active players (who haven't folded) for their next Action
+			while (it.hasNext()){
 				p = it.next();
 				a = p.performAction(bet);
 				printAction(p.toString(), a);
+
 				switch(a){
 					case FOLD:
 						p.initRaises();
 						it.remove();
+						System.err.println(p + ": fold");
 						break;
 					case CALL:
+						System.err.println(p + ": call");
 						break;
 					case RAISE:
 						System.out.println("New bet: "+bet);
+						System.err.println(p + ": bet (" + bet + ")");
 				}	
 			}
 
-			//all players performed an Action
+			// all players performed an Action
 
 			if(activePlayers.size() > 1){
 				//check all active players if they are "in the game"
-				for(Player pl: activePlayers){	
-					if(pl.getBet() == bet)
+				for (Player pl: activePlayers) {
+					if (pl.getBet() == bet) {
 						betReady = true;
-					else{
+					}
+					else {
 						betReady = false;
 						break;
 					}
 				}
-				if(betReady){	//betting round is over -> next community Card(s)
+
+				//betting round is over -> next community Card(s)
+				if (betReady) {
 					bet = 0;
-					for(Player ap: activePlayers){	//set ownBet to 0
+
+					//set ownBet to 0
+					for (Player ap: activePlayers) {
 						ap.initBet();
 						ap.initRaises();
-					}	
-					switch(comCards.size()){
-						case 0:		//the Flop
-							dealComCards(3);
-							break;
-						case 3:		//the Turn
-							dealComCards(1);
-							break;
-						case 4:		//the River
-							dealComCards(1);
-							break;
-						case 5:		//Showdown
+					}
+
+					switch (comCards.size()) {
+						// The flop
+						case 0: dealComCards(3); break;
+
+						// The turn
+						case 3: dealComCards(1); break;
+
+						// The river
+						case 4: dealComCards(1); break;
+
+						// Showdown
+						case 5:
 							assignPot(getWinner(activePlayers));
 							gameRunning = false;
 					}
 				}
 				//only one player left -> gets the pot
-			}else{
+			}
+			else {
 				assignPot(activePlayers);
 				gameRunning = false;
 			}
-		}while(gameRunning);
+		} while (gameRunning);
 	}
 
 	/**
@@ -261,39 +299,29 @@ public class Game {
 	 * Provides a loop to play more than 1 Game.
 	 * Prints the result of all games in the end.
 	 */
-	public void start(){
-		Scanner sc = new Scanner(System.in);
-		String ch;
-		int i = 0;
-		do{
-			numberOfGames++;
+	public void start()
+	{
+		while (numberOfGames++ < noOfGames) {
 			newGame();
 			runGame();
-			i++;
-			/*do{
-				System.out.println("Next Game? (y/n): ");
-				ch = sc.next();
-			}while(!(ch.equals("y") || ch.equals("n")));
-		}while(ch.equals("y"));*/
-		}while(i<10);	
+		}
+
 		printGameResult();
 	}
 
 	private void printGameResult(){
 		System.out.println("Played games: "+numberOfGames);
-		for(Player p: players)
-			System.out.println(p.toString()+" won "+p.getWins()+" times");
+		for(Player p: players) {
+			System.out.println(
+				p + " won " + p.getWins() + " times " +
+				"and has " + p.getBudget() + " money"
+			);
+			System.err.println("game: " + p + " wins " + p.getWins() + " money " + p.getBudget());
+		}
 	}
 
 	private void printAction(String name, Action act){
 		System.out.println(name+" did: "+act.toString());
-	}
-
-	private void printComCards(){
-		for(Card c: comCards){
-			System.out.print(c.toString());
-		}
-		System.out.println();
 	}
 
 	/**
@@ -356,10 +384,11 @@ public class Game {
 	 */
 	private void assignPot(ArrayList<Player> pa){
 		int amount;
-		amount = pot/pa.size();
+		amount = pot / pa.size();
 		for(Player p: pa){
 			p.incBudget(amount);
-			System.out.println(p.toString()+" wins "+amount);
+			System.out.println(p.toString()+" wins " + amount);
+			System.err.println("game: " + p + " wins " + amount);
 		}	
 		pot = 0;
 	}
@@ -375,7 +404,14 @@ public class Game {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception
+	{
+		// Number of games
+		if (args.length > 0) noOfGames = Integer.parseInt(args[0]);
+
+		// Command file
+		if (args.length > 1) commandFile = new File(args[1]);
+
 		Game.getInstance().start();
 	}
 }
