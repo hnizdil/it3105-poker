@@ -67,6 +67,8 @@ public class GoodBotPlayer extends Player
 		else {
 			double handStrength = calcHandStrength(comCards, numberOfActive);
 
+			//System.err.println(handStrength);
+
 			if (handStrength < foldLimit) act = Action.FOLD;
 
 			else if ((handStrength < callLimit) || (ownBet == maxBet)) {
@@ -118,9 +120,17 @@ public class GoodBotPlayer extends Player
 		}
 
 		// Equation from the paper
-		return Math.pow(
+		double s = Math.pow(
 			(stat[2] + stat[1]/2.0) / (double)(stat[0]+stat[1]+stat[2]),
 			numberOfActive
 		);
+
+		/*
+		System.err.print(s + "\t" + stat[0] + "\t" + stat[1] + "\t" + stat[2] + "\t===\t");
+		for (int z = 0; z < myPower.length; z++) System.err.print(myPower[z] + "\t");
+		System.err.println();
+		*/
+
+		return s;
 	}
 }
