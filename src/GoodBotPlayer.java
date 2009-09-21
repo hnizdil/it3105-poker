@@ -9,7 +9,6 @@ import java.util.Random;
  * @author rb,jh
  * @version 20.09.2009
  */
-public class GoodBotPlayer extends Player
 {
 	//Thresholds before the Flop
 	private final double preFlopFoldLimit = 0.085;
