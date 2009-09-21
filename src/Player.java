@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * Super class for a Player (bot or human)
  * Provides common features: hold cards, budget, name,...
@@ -12,6 +14,7 @@ public abstract class Player {
 	protected boolean status; //true = player is in the game, false = out
 	protected int ownBet;
 	protected int wins;
+	protected ArrayList<Card> allCards = Card.gen52Cards();
 	protected int raises;
 	
 	/*
@@ -52,25 +55,29 @@ public abstract class Player {
 	 * @return	true if raise is possible and executed properly
 	 * 			false otherwise
 	 */
-	protected boolean raise(int x){
+	protected boolean raise(int x)
+	{
 		boolean res = false;
 		int bet = Game.getInstance().getBet();
 		int diff = x-ownBet;
 		int newBet = x;
-		do{
+		do {
 			//if x is not in the valid range it is set to the old bet (like a call)
-			if((newBet >= bet) && (newBet <= Game.getInstance().getMaxBet())){
+			if ((newBet >= bet) && (newBet <= Game.getInstance().getMaxBet())){
 				decBudget(diff);	//decrease with difference to ownBet
 				Game.getInstance().incPot(diff);	//increase pot
 				ownBet = newBet;
 				Game.getInstance().setBet(newBet);
 				res = true;
-			}else{
+			}
+			else {
 				newBet = bet;
 				diff = newBet-ownBet;
 			}
-		}while(!res);
+		} while(!res);
+
 		raises++;
+
 		return res;
 	}
 	
@@ -99,6 +106,11 @@ public abstract class Player {
 	public void decBudget(int a){
 		budget -= a;
 		ownBet += a;
+	}
+
+	public int getBudget()
+	{
+		return budget;
 	}
 	
 	public int getBet(){ return ownBet; }
