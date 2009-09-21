@@ -10,7 +10,7 @@ import java.util.Random;
  * @version 20.09.2009
  */
 public class GoodBotPlayer extends Player
-public class GoodBotPlayer extends Player{
+{
 	//Thresholds before the Flop
 	private final double preFlopFoldLimit = 0.085;
 	private final double preFlopCallLimit = 0.20;
@@ -73,7 +73,7 @@ public class GoodBotPlayer extends Player{
 		else {
 			double handStrength = calcHandStrength(comCards, numberOfActive);
 
-			//System.err.println(handStrength);
+			System.err.println(handStrength);
 
 			if (handStrength < foldLimit) {
 				act = Action.FOLD;
