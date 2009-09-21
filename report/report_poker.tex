@@ -69,12 +69,24 @@ titlepage						% Titelei auf eigener Seite
 \newpage
 
 \section{Introduction}
+The following text is a report for the Poker project in the IT3105 Artificial Intelligence course. The goal of the project was to write a poker simulator for Texas Hold'Em Poker which provides a simple game interface and the ability to hold human as well as artificial players. These artificial players, the bots, should be able to make reasonable decisions in the game. To show the difference of certain AI-strategies it was required to built up three different classes of bots. In the first phase the bot should make simple decisions according to the current game state, which contains values like the pot and the current bet.
+The second bots should behave a little bit more sophisticated. Thus he had to  rely on values of a so called pre-flop rollout simulation, done previously to the run of the Poker game, and hand-strength calculations, done at runtime. Actually, it was ought to build a third bot with an opponent modelling feature, but this is not part of that report since we were not able to implement it in time.
+
+The implementation of the project is done in Java, which was chosen according to it's good capabilities in object-orientation, since the content of the project was quite practical.
+
+The report will show up the structure and implementation issues on the different parts of the project. In addition o that the results of the bot's behaviour is discussed.
 
 \section{Basic Approach}
+In the first sketch of the project we decided to model the basic elements of a poker game as classes. Thus we have the classes \texttt{Card, Game, Player}. These main classes are surrounded by several smaller classes.
+
+The class \texttt{Card} provides obviously a model for playing cards. Thus it must have a value and a suit which are implemented with the Java construct \texttt{enum}. For public access \texttt{Card} provides methods for calculating the highest hand power (5 cards) out of 5 to 7 cards and in addition methods for generating and shuffling a card deck. For that it uses several internal (private) methods, for example, for finding a Straight. These part is quite similar to the implementation in the helper code. For details we refer to the comments in the source code.
+
+The two other main classes are described later in the text.
 
 \section{The Game Simulator}
-\subsection{Concept}
-\subsection{Implementation}
+The core of the game is the class \texttt{Game}. Since an execution of the Poker simulator should have only one game, the singleton pattern is realized on it. An instance of \texttt{Game} need to hold references to all participating players, a deck and the community cards. In addition has variables for the pot, the number of played games, the current bet, the highest possible bet, the blind and a \texttt{Comparator} for hands.
+
+Within the instancing of the singleton the method \texttt{initGame} is called, which collects all important parameters to start the game like the number of players, which player is human or not and the number of games to play. These information might be typed in interactively or be written from a file. After that the game starts with the method \texttt{start} which contains a loop of setting up a new game (\texttt{newGame}) and let it run (\texttt{runGame}). \texttt{newGame} initializes the game state, gets a new deck and reorders the players. The real game happens in \texttt{runGame}. In the beginning it gets the blind from the first player in the queue. Then the first betting round starts. Since \texttt{Game} has also a reference to all active players (players who did not fold, yet) it can loop through all actives and asks them for their action (fold, call, raise). This happens via the common interface of all players \texttt{performAction}. That method returns a value of the \text{enum} \texttt{Action}. With that action you can switch on what should happen after performing the action. If a player folded he is removed from the active players list. If he raises the new bet is printed on the screen. A betting runs as long all active players bet the same amount (in our program a player may raise only once in a betting round). After a betting round it is checked if there is more than one active player left. In that case the community cards are dealt, else that last player gets the pot (\texttt{assignPot}). After the River a last betting round is performed, and if there are more than one players left it comes to showdown in the \texttt{getWinner} method. After the assignment of the pot to the winner/winners the game is over and a new one starts with \texttt{newGame}. For the detailed implementation of the mentioned helper methods take a look at the comments in the source code.
 
 \section{AI Poker Player}
 
@@ -85,8 +97,9 @@ titlepage						% Titelei auf eigener Seite
 \subsection{Phase II Player}
 \subsubsection{Pre-Flop Rollout-Simulation}
 \subsubsection{Hand-Strength Calculation}
-
+Since the better bot shall perform hand-strength calculations after the dealing of community cards he need to have method for this. That method is called \texttt{calcHandStrength}. It takes the number of active players together with the current community cards in a list and gives back a probability of winning for the calling player. Therefore it gets all  pair-combinations out of the remaining deck with help of the class \texttt{Combination}. Every pair is merged with the community cards to a complete hand or more cards. For every set the highest power is calculated and compared with the highest power of the calling player. The result increments the according element of the integer array \texttt{statistic} (loss, tie, win). In the end the probability is calculated by the equation from the paper.
 \subsubsection{Testing}
-\section{Problems}
 \section{Conclusion}
+Some of the project's main issues, the pre-flop simulation and the hand-strength calculation, work properly. Other issues like the opponent modelling do not work.
+One of the biggest disadvantages of the phase II bot is that he does not use the provides information from the pre-flop simulation and the hand-strength calculation very well. So at this point the behaviour of the better bot could be highly improved.
 \end{document}
