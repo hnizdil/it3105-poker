@@ -12,6 +12,7 @@ public abstract class Player {
 	protected boolean status; //true = player is in the game, false = out
 	protected int ownBet;
 	protected int wins;
+	protected int raises;
 	
 	/*
 	 * Player constructor for "dummy" player for Hand-Strength-Calculations
@@ -32,6 +33,8 @@ public abstract class Player {
 		status = true;
 		wins = 0;
 	}
+	
+	public void initRaises(){ raises = 0; }
 	
 	public void incWins(){ wins++;}
 	
@@ -67,6 +70,7 @@ public abstract class Player {
 				diff = newBet-ownBet;
 			}
 		}while(!res);
+		raises++;
 		return res;
 	}
 	

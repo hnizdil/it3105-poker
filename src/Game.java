@@ -171,6 +171,8 @@ public class Game {
 		newOrder();
 		activePlayers.clear();
 		activePlayers.addAll(players);
+		for(Player p: activePlayers)
+			p.initRaises();
 	}
 
 	/**
@@ -203,6 +205,7 @@ public class Game {
 				printAction(p.toString(), a);
 				switch(a){
 					case FOLD:
+						p.initRaises();
 						it.remove();
 						break;
 					case CALL:
@@ -226,8 +229,10 @@ public class Game {
 				}
 				if(betReady){	//betting round is over -> next community Card(s)
 					bet = 0;
-					for(Player ap: activePlayers)	//set ownBet to 0
+					for(Player ap: activePlayers){	//set ownBet to 0
 						ap.initBet();
+						ap.initRaises();
+					}	
 					switch(comCards.size()){
 						case 0:		//the Flop
 							dealComCards(3);
@@ -270,7 +275,7 @@ public class Game {
 				ch = sc.next();
 			}while(!(ch.equals("y") || ch.equals("n")));
 		}while(ch.equals("y"));*/
-		}while(i<1000);	
+		}while(i<10);	
 		printGameResult();
 	}
 

@@ -9,8 +9,12 @@ import java.util.Random;
  * @version 20.09.2009
  */
 public class GoodBotPlayer extends Player{
-	private final double foldLimit = 0.01;
-	private final double callLimit = 0.15;
+	//Thresholds before the Flop
+	private final double preFlopFoldLimit = 0.085;
+	private final double preFlopCallLimit = 0.20;
+	//Thresholds after Flop (with com. Cards)
+	private final double foldLimit = 0.2;
+	private final double callLimit = 0.5;
 
 	public GoodBotPlayer(Card[] hole){
 		super(hole);
@@ -43,9 +47,9 @@ public class GoodBotPlayer extends Player{
 		case 0:	//pre-flop
 			winProbability = PreFlopTable.getWinningProbability(hole, numberOfActive);
 			//TODO values in here determine if player is aggressive in the beginning
-			if(winProbability < foldLimit)
+			if(winProbability < preFlopFoldLimit)
 				act = Action.FOLD;
-			else if((winProbability < callLimit) || (ownBet == maxBet)){
+			else if((winProbability < preFlopCallLimit) || (ownBet == maxBet) || (raises>1)){
 				act = Action.CALL;
 				call();
 			}else{
@@ -61,7 +65,7 @@ public class GoodBotPlayer extends Player{
 			double handStrength = calcHandStrength(cards,numberOfActive);
 			if(handStrength < foldLimit)
 				act = Action.FOLD;
-			else if((handStrength < callLimit) || (ownBet == maxBet)){
+			else if((handStrength < callLimit) || (ownBet == maxBet) || (raises>1)){
 				act = Action.CALL;
 				call();
 			}else{
